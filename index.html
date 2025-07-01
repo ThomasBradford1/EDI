@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fantasy Leaderboard Login</title>
+</head>
+<body>
+  <h1>Login to Fantasy Leaderboard</h1>
+  <div id="login-container">
+    <input id="email" type="email" placeholder="Email" /><br />
+    <input id="password" type="password" placeholder="Password" /><br />
+    <button id="login-btn">Login</button>
+    <p id="login-error" style="color:red;"></p>
+  </div>
+
+  <div id="app-container" style="display:none;">
+    <h2>Welcome, <span id="user-email"></span>!</h2>
+    <div id="admin-panel" style="display:none;">
+      <h3>Admin Dashboard (Score Input Form Coming Soon)</h3>
+      <!-- We'll add form here later -->
+    </div>
+    <div id="user-panel" style="display:none;">
+      <h3>Leaderboard & Weekly Scores</h3>
+      <!-- Leaderboard and scores here -->
+    </div>
+    <button id="logout-btn">Logout</button>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore-compat.js"></script>
+
+  <!-- Your Firebase config and app scripts -->
+  <script type="module" src="firebaseConfig.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
