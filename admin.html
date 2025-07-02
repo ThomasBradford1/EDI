@@ -5,22 +5,58 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 40px;
+      padding: 30px;
       background-color: #f5f5f5;
     }
 
-    label {
-      display: block;
-      margin-bottom: 10px;
+    h2 {
+      margin-bottom: 20px;
     }
 
-    select, input[type="number"], input[type="text"] {
+    label {
+      font-weight: bold;
+    }
+
+    .players-container {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+    }
+
+    .player-column {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .player-column h3 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .player-column label {
+      display: block;
+      margin-top: 10px;
+    }
+
+    input[type="number"], select {
+      width: 100%;
       padding: 5px;
       font-size: 1rem;
     }
 
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-left: 5px;
+    }
+
     button {
-      padding: 10px 15px;
+      margin-top: 30px;
+      padding: 10px 20px;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -36,76 +72,101 @@
 </head>
 <body>
   <h2>Submit Weekly Scores</h2>
+
   <form id="score-form">
     <label for="week">Week:
       <select id="week" name="week"></select>
     </label><br><br>
 
-    <label for="player">Player:
-      <select id="player">
-        <option>Micheal</option>
-        <option>Tom</option>
-        <option>Luke</option>
-        <option>Jeff</option>
-        <option>Jordan</option>
-      </select>
-    </label><br><br>
+    <div class="players-container" id="players-area">
+      <!-- Player inputs will be inserted here -->
+    </div>
 
-    <label>Wild Scalps: <input type="number" id="wildScalps" min="0" value="0" /></label><br><br>
-    <label>Head Hunter: <input type="number" id="headHunter" min="0" value="0" /></label><br><br>
-    <label>Assassinated: <input type="checkbox" id="assassinated" /></label><br><br>
-
-    <label for="venuePosition">Venue Position:
-      <select id="venuePosition">
-        <option value="1">1st</option>
-        <option value="2">2nd</option>
-        <option value="3">3rd</option>
-        <option value="4">4th</option>
-        <option value="5">5th</option>
-      </select>
-    </label><br><br>
-
-    <label>Golden Snitch: <input type="checkbox" id="goldenSnitch" /></label><br><br>
-    <label>Final Table: <input type="checkbox" id="finalTable" /></label><br><br>
-    <label>Out Before Break: <input type="checkbox" id="outBeforeBreak" /></label><br><br>
-
-    <button type="submit">Submit</button>
+    <button type="submit">Submit All Scores</button>
   </form>
 
   <a href="leaderboard.html" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Leaderboard</a>
 
-  <script type="module" src="admin.js"></script>
-
-  <!-- Script to populate week options -->
+  <!-- Place these AFTER the form elements so they can target the DOM -->
   <script>
+    // Generate week dropdown options
     const weekSelect = document.getElementById('week');
-    const startDate = new Date('2025-07-03'); // Starting Thursday
+    const startDate = new Date('2025-07-03');
     const numWeeks = 13;
     const today = new Date();
     let selectedIndex = 0;
 
     for (let i = 0; i < numWeeks; i++) {
       const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i * 7); // Add 7 days each iteration
+      date.setDate(startDate.getDate() + i * 7);
 
       const option = document.createElement('option');
-      const displayDate = date.toLocaleDateString('en-AU'); // Format: dd/mm/yyyy
-      const valueDate = date.toISOString().split('T')[0];   // Format: yyyy-mm-dd
+      const displayDate = date.toLocaleDateString('en-AU');
+      const valueDate = date.toISOString().split('T')[0];
 
       option.value = valueDate;
       option.textContent = `Week ${i + 1} - ${displayDate}`;
 
       const nextWeek = new Date(date);
       nextWeek.setDate(date.getDate() + 7);
-
-      if (today >= date && today < nextWeek) {
-        selectedIndex = i;
-      }
+      if (today >= date && today < nextWeek) selectedIndex = i;
 
       weekSelect.appendChild(option);
     }
 
     weekSelect.selectedIndex = selectedIndex;
+
+    // Generate player input columns
+    const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
+    const container = document.getElementById('players-area');
+
+    players.forEach(player => {
+      const div = document.createElement('div');
+      div.className = 'player-column';
+
+      div.innerHTML = `
+        <h3>${player}</h3>
+
+        <label>Wild Scalps:
+          <input type="number" name="wildScalps[${player}]" min="0" value="0" />
+        </label>
+
+        <label>Head Hunter:
+          <input type="number" name="headHunter[${player}]" min="0" value="0" />
+        </label>
+
+        <label>Assassinated:
+          <input type="checkbox" name="assassinated[${player}]" />
+        </label>
+
+        <label>Venue Position:
+          <select name="venuePosition[${player}]">
+            <option value="1">1st</option>
+            <option value="2">2nd</option>
+            <option value="3">3rd</option>
+            <option value="4">4th</option>
+            <option value="5">5th</option>
+          </select>
+        </label>
+
+        <label>Golden Snitch:
+          <input type="checkbox" name="goldenSnitch[${player}]" />
+        </label>
+
+        <label>Final Table:
+          <input type="checkbox" name="finalTable[${player}]" />
+        </label>
+
+        <label>Out Before Break:
+          <input type="checkbox" name="outBeforeBreak[${player}]" />
+        </label>
+      `;
+
+      container.appendChild(div);
+    });
   </script>
+
+  <!-- Keep your Firebase/app logic last -->
+  <script type="module" src="admin.js"></script>
 </body>
 </html>
