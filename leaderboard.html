@@ -2,67 +2,103 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fantasy Leaderboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #e6f2e6; /* light green background */
-      color: #004d00; /* dark green text */
-      margin: 20px;
-      text-align: center;
-    }
-
-    h1 {
-      color: #006600;
-      margin-bottom: 20px;
-      font-weight: 700;
-      letter-spacing: 1px;
+      padding: 10px;
+      margin: 0 auto;
+      max-width: 100%;
+      font-family: Arial, sans-serif;
     }
 
     table {
-      margin: 0 auto;
+      width: 100%;
       border-collapse: collapse;
-      width: 95%;
-      max-width: 900px;
-      background: white;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      overflow: hidden;
+      max-width: 100%;
+      overflow-x: auto;
+      table-layout: auto;  /* natural column sizing */
+    }
+
+    thead tr {
+      background-color: #4caf50;
+      color: white;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+      z-index: 1;
     }
 
     th, td {
-      padding: 12px 15px;
+      padding: 8px 10px;
       border-bottom: 1px solid #c6e0b4;
-      font-size: 1rem;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    th {
-      background-color: #4caf50; /* NRL ladder green */
-      color: white;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      font-weight: 600;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #f0f9f0;
-    }
-
-    tbody tr:hover {
-      background-color: #c8e6c9;
-    }
-
-    /* Make points bigger and bold */
-    td:nth-child(3) {
-      font-size: 1.5rem;
+    /* Adjusted widths and min-widths */
+    th:nth-child(1), td:nth-child(1) {  /* Rank */
+      width: 5%;
+      min-width: 40px;
+      text-align: left;
       font-weight: 700;
       color: #2e7d32;
+    }
+    th:nth-child(2), td:nth-child(2) {  /* Player */
+      width: 20%;
+      min-width: 120px;
+      text-align: left;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+    th:nth-child(3), td:nth-child(3) {  /* Points */
+      width: 10%;
+      min-width: 70px;
+      text-align: left;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    /* Other columns */
+    th:nth-child(n+4), td:nth-child(n+4) {
+      min-width: 60px;
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #555;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 700px) {
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      thead, tbody, tr, th, td {
+        display: table-cell; /* keep horizontal layout */
+      }
+
+      th, td {
+        font-size: 0.9rem;
+        padding: 6px 8px;
+      }
+
+      th:nth-child(1), td:nth-child(1),
+      th:nth-child(2), td:nth-child(2),
+      th:nth-child(3), td:nth-child(3) {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #2e7d32;
+      }
     }
   </style>
 </head>
 <body>
   <h1>Fantasy League Leaderboard</h1>
+  <a href="weekscores.html"style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Weekly Scores</a>
+  <a id="adminButton" href="admin.html" style="display: none; margin-bottom: 10px; padding: 10px 15px; background-color: #444; color: white; border-radius: 5px; text-decoration: none;">Admin Panel</a>
   <table>
     <thead>
       <tr>
@@ -71,6 +107,7 @@
         <th>Points</th>
         <th>Wild Scalps</th>
         <th>Head Hunter</th>
+        <th>Venue Pos (latest)</th>
         <th>Assassinated</th>
         <th>Golden Snitch</th>
         <th>Final Table</th>
@@ -78,25 +115,32 @@
       </tr>
     </thead>
     <tbody id="leaderboard-body">
-      <tr><td colspan="9">Loading leaderboard...</td></tr>
+      <tr><td colspan="10">Loading leaderboard...</td></tr>
     </tbody>
   </table>
 
   <script type="module">
     import { db } from './firebaseConfig.js';
-    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
 
     async function loadLeaderboard() {
+        // Show admin button if user is admin
+if (localStorage.getItem("isAdmin") === "true") {
+  document.getElementById("adminButton").style.display = "inline-block";
+}
+
       const tbody = document.getElementById('leaderboard-body');
       tbody.innerHTML = '';
 
       const scoresSnapshot = await getDocs(collection(db, "scores"));
       if (scoresSnapshot.empty) {
-        tbody.innerHTML = '<tr><td colspan="9">No scores found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
         return;
       }
 
-      // Aggregate stats by player
       const playerStats = {};
 
       scoresSnapshot.forEach(doc => {
@@ -105,7 +149,6 @@
 
         if (!playerStats[player]) {
           playerStats[player] = {
-            weeks: 0,
             totalPoints: 0,
             wildScalps: 0,
             headHunter: 0,
@@ -113,10 +156,16 @@
             goldenSnitch: 0,
             finalTable: 0,
             outBeforeBreak: 0,
+            latestWeek: '',
+            latestVenuePosition: '-'
           };
         }
 
-        playerStats[player].weeks++;
+        if (!playerStats[player].latestWeek || data.week > playerStats[player].latestWeek) {
+          playerStats[player].latestWeek = data.week;
+          playerStats[player].latestVenuePosition = data.venuePosition || '-';
+        }
+
         playerStats[player].wildScalps += data.wildScalps || 0;
         playerStats[player].headHunter += data.headHunter || 0;
         playerStats[player].assassinated += data.assassinated ? 1 : 0;
@@ -127,7 +176,6 @@
         playerStats[player].totalPoints += calculatePoints(data);
       });
 
-      // Sort players by totalPoints descending
       const sortedPlayers = Object.entries(playerStats)
         .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
 
@@ -140,8 +188,9 @@
             <td>${stats.totalPoints}</td>
             <td>${stats.wildScalps}</td>
             <td>${stats.headHunter}</td>
+            <td>${stats.latestVenuePosition}</td>
             <td>${stats.assassinated}</td>
-            <td>${stats.goldenSnitch || stats.goldenSnitch}</td>
+            <td>${stats.goldenSnitch}</td>
             <td>${stats.finalTable}</td>
             <td>${stats.outBeforeBreak}</td>
           </tr>
@@ -151,13 +200,6 @@
 
     function calculatePoints(data) {
       let points = 0;
-      switch(data.venuePosition) {
-        case 1: points += 4; break;
-        case 2: points += 3; break;
-        case 3: points += 2; break;
-        case 4: points += 1; break;
-        case 5: points += 0; break;
-      }
       points += (data.wildScalps || 0);
       points += (data.headHunter || 0);
       points += data.assassinated ? -1 : 0;

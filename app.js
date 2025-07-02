@@ -31,14 +31,21 @@ loginBtn.addEventListener("click", async () => {
     userEmailSpan.textContent = user.email;
 
     // Simplified role detection based on password
-    if (password === "Admin1") {
-     // Redirect admins to admin.html
-  window.location.href = 'admin.html';
-} else if (password === 'Password') {
-  // Redirect users to leaderboard.html
-  window.location.href = 'leaderboard.html';
+  if (password === "Admin1") {
+  // ✅ Store admin status in localStorage
+  localStorage.setItem("isAdmin", "true");
+
+  // Redirect admins to admin.html
+  window.location.href = "admin.html";
+
+} else if (password === "Password") {
+  localStorage.setItem("isAdmin", "false");
+
+  // Redirect users to leaderboard
+  window.location.href = "leaderboard.html";
+
 } else {
-  alert('Invalid password');
+  alert("Invalid password");
 }
 
   } catch (err) {
@@ -48,6 +55,7 @@ loginBtn.addEventListener("click", async () => {
 
 logoutBtn.addEventListener("click", async () => {
   await signOut(auth);
+  localStorage.removeItem("isAdmin"); // clear admin flag
   loginContainer.style.display = "block";
   appContainer.style.display = "none";
   emailInput.value = "";
