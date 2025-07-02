@@ -10,7 +10,7 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
   const headHunter = parseInt(document.getElementById('headHunter').value);
   const assassinated = document.getElementById('assassinated').checked;
   const venuePosition = parseInt(document.getElementById('venuePosition').value);
-  const goldenSnitch = document.getElementById('goldenFitch').checked;
+  const goldenSnitch = document.getElementById('goldenSnitch').checked;
   const finalTable = document.getElementById('finalTable').checked;
   const outBeforeBreak = document.getElementById('outBeforeBreak').checked;
 
