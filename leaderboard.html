@@ -105,6 +105,10 @@
       </tbody>
     </table>
   </div>
+  <button id="logout-btn" style="margin-top: 20px; padding: 8px 15px; background-color: #e53935; color: white; border: none; border-radius: 4px; cursor: pointer;">
+  Logout
+</button>
+
 
   <script type="module">
     import { db } from './firebaseConfig.js';
@@ -197,6 +201,19 @@
     }
 
     loadLeaderboard();
+  </script>
+   <script type="module">
+    import { auth } from './firebaseConfig.js';
+    import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
+
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async () => {
+        await signOut(auth);
+        localStorage.removeItem("isAdmin");
+        window.location.href = 'index.html';
+      });
+    }
   </script>
 </body>
 </html>
