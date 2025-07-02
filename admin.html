@@ -2,15 +2,46 @@
 <html>
 <head>
   <title>Admin Score Submission</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background-color: #f5f5f5;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    select, input[type="number"], input[type="text"] {
+      padding: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #388E3C;
+    }
+  </style>
 </head>
 <body>
   <h2>Submit Weekly Scores</h2>
   <form id="score-form">
-    <label>Week:
-      <input type="text" id="week" value="2025-W1" required />
+    <label for="week">Week:
+      <select id="week" name="week"></select>
     </label><br><br>
 
-    <label>Player:
+    <label for="player">Player:
       <select id="player">
         <option>Micheal</option>
         <option>Tom</option>
@@ -24,7 +55,7 @@
     <label>Head Hunter: <input type="number" id="headHunter" min="0" value="0" /></label><br><br>
     <label>Assassinated: <input type="checkbox" id="assassinated" /></label><br><br>
 
-    <label>Venue Position:
+    <label for="venuePosition">Venue Position:
       <select id="venuePosition">
         <option value="1">1st</option>
         <option value="2">2nd</option>
@@ -44,5 +75,37 @@
   <a href="leaderboard.html" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Leaderboard</a>
 
   <script type="module" src="admin.js"></script>
+
+  <!-- Script to populate week options -->
+  <script>
+    const weekSelect = document.getElementById('week');
+    const startDate = new Date('2025-07-03'); // Starting Thursday
+    const numWeeks = 13;
+    const today = new Date();
+    let selectedIndex = 0;
+
+    for (let i = 0; i < numWeeks; i++) {
+      const date = new Date(startDate);
+      date.setDate(startDate.getDate() + i * 7); // Add 7 days each iteration
+
+      const option = document.createElement('option');
+      const displayDate = date.toLocaleDateString('en-AU'); // Format: dd/mm/yyyy
+      const valueDate = date.toISOString().split('T')[0];   // Format: yyyy-mm-dd
+
+      option.value = valueDate;
+      option.textContent = `Week ${i + 1} - ${displayDate}`;
+
+      const nextWeek = new Date(date);
+      nextWeek.setDate(date.getDate() + 7);
+
+      if (today >= date && today < nextWeek) {
+        selectedIndex = i;
+      }
+
+      weekSelect.appendChild(option);
+    }
+
+    weekSelect.selectedIndex = selectedIndex;
+  </script>
 </body>
 </html>
