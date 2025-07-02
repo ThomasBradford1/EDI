@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Previous Week Scores</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
+  <style>
     body {
       padding: 10px;
       margin: 0 auto;
@@ -12,12 +12,15 @@
       font-family: Arial, sans-serif;
     }
 
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
-      max-width: 100%;
-      overflow-x: auto;
-      table-layout: auto;  /* natural column sizing */
+      table-layout: auto;
     }
 
     thead tr {
@@ -38,22 +41,15 @@
       text-overflow: ellipsis;
     }
 
-    /* Adjusted widths and min-widths */
-    th:nth-child(1), td:nth-child(1) {  /* Rank */
-      width: 5%;
-      min-width: 40px;
-      text-align: left;
-      font-weight: 700;
-      color: #2e7d32;
-    }
-    th:nth-child(2), td:nth-child(2) {  /* Player */
+    th:nth-child(1), td:nth-child(1) {
       width: 20%;
       min-width: 120px;
       text-align: left;
       font-weight: 700;
       color: #2e7d32;
     }
-    th:nth-child(3), td:nth-child(3) {  /* Points */
+
+    th:nth-child(2), td:nth-child(2) {
       width: 10%;
       min-width: 70px;
       text-align: left;
@@ -61,36 +57,25 @@
       color: #2e7d32;
     }
 
-    /* Other columns */
-    th:nth-child(n+4), td:nth-child(n+4) {
+    th:nth-child(n+3), td:nth-child(n+3) {
       min-width: 60px;
       font-weight: 400;
       font-size: 0.85rem;
       color: #555;
     }
 
-    /* Responsive adjustments */
     @media (max-width: 700px) {
-      table {
-        display: block;
-        overflow-x: auto;
-        white-space: nowrap;
+      .table-container {
+        -webkit-overflow-scrolling: touch;
       }
-      thead, tbody, tr, th, td {
-        display: table-cell; /* keep horizontal layout */
+
+      table {
+        min-width: 900px;
       }
 
       th, td {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         padding: 6px 8px;
-      }
-
-      th:nth-child(1), td:nth-child(1),
-      th:nth-child(2), td:nth-child(2),
-      th:nth-child(3), td:nth-child(3) {
-        font-weight: 700;
-        font-size: 1.1rem;
-        color: #2e7d32;
       }
     }
   </style>
@@ -103,41 +88,53 @@
     <option value="">-- Choose a week --</option>
   </select>
 
-  <table id="week-table">
-    <thead>
-      <tr>
-        <th>Player</th>
-        <th>Total Points</th>
-        <th>Wild Scalps</th>
-        <th>Head Hunter</th>
-        <th>Venue Position</th>
-        <th>Assassinated</th>
-        <th>Golden Snitch</th>
-        <th>Final Table</th>
-        <th>Out Before Break</th>
-      </tr>
-    </thead>
-    <tbody id="week-body">
-      <tr><td colspan="9">Select a week to view scores.</td></tr>
-    </tbody>
-  </table>
-  <a href="leaderboard.html" style="
-  display: inline-block;
-  margin-top: 20px;
-  padding: 10px 15px;
-  background-color: #4CAF50;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
-  font-weight: bold;
-">
-  ← Back to Leaderboard
-</a>
-<button id="logout-btn" style="margin-top: 20px; padding: 8px 15px; background-color: #e53935; color: white; border: none; border-radius: 4px; cursor: pointer;">
-  Logout
-</button>
+  <div class="table-container">
+    <table id="week-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Total Points</th>
+          <th>Wild Scalps</th>
+          <th>Head Hunter</th>
+          <th>Venue Position</th>
+          <th>Assassinated</th>
+          <th>Golden Snitch</th>
+          <th>Final Table</th>
+          <th>Out Before Break</th>
+        </tr>
+      </thead>
+      <tbody id="week-body">
+        <tr><td colspan="9">Select a week to view scores.</td></tr>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- Firebase SDK -->
+  <a href="leaderboard.html" style="
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+  ">
+    ← Back to Leaderboard
+  </a>
+
+  <button id="logout-btn" style="
+    margin-top: 20px;
+    padding: 8px 15px;
+    background-color: #e53935;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  ">
+    Logout
+  </button>
+
+  <!-- Firebase SDK and Scripts -->
   <script type="module">
     import { db } from './firebaseConfig.js';
     import {
@@ -160,7 +157,6 @@
         }
       });
 
-      // Sort and add to dropdown
       Array.from(weeks).sort().forEach(week => {
         const option = document.createElement("option");
         option.value = week;
@@ -169,55 +165,53 @@
       });
     }
 
-  weekSelect.addEventListener("change", async (e) => {
-  const selectedWeek = e.target.value;
-  if (!selectedWeek) return;
+    weekSelect.addEventListener("change", async (e) => {
+      const selectedWeek = e.target.value;
+      if (!selectedWeek) return;
 
-  const q = query(collection(db, "scores"), where("week", "==", selectedWeek));
-  const snapshot = await getDocs(q);
+      const q = query(collection(db, "scores"), where("week", "==", selectedWeek));
+      const snapshot = await getDocs(q);
 
-  if (snapshot.empty) {
-    weekBody.innerHTML = "<tr><td colspan='9'>No scores found for that week.</td></tr>";
-    return;
-  }
+      if (snapshot.empty) {
+        weekBody.innerHTML = "<tr><td colspan='9'>No scores found for that week.</td></tr>";
+        return;
+      }
 
-  weekBody.innerHTML = "";
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const points = calculatePoints(data);
-    weekBody.innerHTML += `
-      <tr>
-        <td data-label="Player">${data.player}</td>
-        <td data-label="Total Points">${points}</td>
-        <td data-label="Wild Scalps">${data.wildScalps || 0}</td>
-        <td data-label="Head Hunter">${data.headHunter || 0}</td>
-        <td data-label="Venue Position">${data.venuePosition || '-'}</td>
-        <td data-label="Assassinated">${data.assassinated ? 1 : 0}</td>
-        <td data-label="Golden Snitch">${data.goldenSnitch ? 1 : 0}</td>
-        <td data-label="Final Table">${data.finalTable ? 1 : 0}</td>
-        <td data-label="Out Before Break">${data.outBeforeBreak ? 1 : 0}</td>
-      </tr>
-    `;
-  });
-});  // <-- Properly closed here
+      weekBody.innerHTML = "";
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const points = calculatePoints(data);
+        weekBody.innerHTML += `
+          <tr>
+            <td>${data.player}</td>
+            <td>${points}</td>
+            <td>${data.wildScalps || 0}</td>
+            <td>${data.headHunter || 0}</td>
+            <td>${data.venuePosition || '-'}</td>
+            <td>${data.assassinated ? 1 : 0}</td>
+            <td>${data.goldenSnitch ? 1 : 0}</td>
+            <td>${data.finalTable ? 1 : 0}</td>
+            <td>${data.outBeforeBreak ? 1 : 0}</td>
+          </tr>
+        `;
+      });
+    });
 
-function calculatePoints(data) {
-  let points = 0;
+    function calculatePoints(data) {
+      let points = 0;
+      points += (data.wildScalps || 0);
+      points += (data.headHunter || 0);
+      points += data.assassinated ? -1 : 0;
+      points += data.goldenSnitch ? 1 : 0;
+      points += data.finalTable ? 1 : 0;
+      points += data.outBeforeBreak ? -1 : 0;
+      return points;
+    }
 
-  points += (data.wildScalps || 0);
-  points += (data.headHunter || 0);
-  points += data.assassinated ? -1 : 0;
-  points += data.goldenSnitch ? 1 : 0;
-  points += data.finalTable ? 1 : 0;
-  points += data.outBeforeBreak ? -1 : 0;
-
-  return points;
-}
-
-loadWeeks();
-
+    loadWeeks();
   </script>
-   <script type="module">
+
+  <script type="module">
     import { auth } from './firebaseConfig.js';
     import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
 
