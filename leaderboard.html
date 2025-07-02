@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Fantasy Leaderboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #e6f2e6; /* light green background */
+      color: #004d00; /* dark green text */
+      margin: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #006600;
+      margin-bottom: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse;
+      width: 95%;
+      max-width: 900px;
+      background: white;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #c6e0b4;
+      font-size: 1rem;
+    }
+
+    th {
+      background-color: #4caf50; /* NRL ladder green */
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    tbody tr:nth-child(even) {
+      background-color: #f0f9f0;
+    }
+
+    tbody tr:hover {
+      background-color: #c8e6c9;
+    }
+
+    /* Make points bigger and bold */
+    td:nth-child(3) {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fantasy League Leaderboard</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Rank</th>
+        <th>Player</th>
+        <th>Points</th>
+        <th>Wild Scalps</th>
+        <th>Head Hunter</th>
+        <th>Assassinated</th>
+        <th>Golden Snitch</th>
+        <th>Final Table</th>
+        <th>Out Before Break</th>
+      </tr>
+    </thead>
+    <tbody id="leaderboard-body">
+      <tr><td colspan="9">Loading leaderboard...</td></tr>
+    </tbody>
+  </table>
+
+  <script type="module">
+    import { db } from './firebaseConfig.js';
+    import { collection, getDocs } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+
+    async function loadLeaderboard() {
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
+
+      const scoresSnapshot = await getDocs(collection(db, "scores"));
+      if (scoresSnapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="9">No scores found</td></tr>';
+        return;
+      }
+
+      // Aggregate stats by player
+      const playerStats = {};
+
+      scoresSnapshot.forEach(doc => {
+        const data = doc.data();
+        const player = data.player || 'Unknown';
+
+        if (!playerStats[player]) {
+          playerStats[player] = {
+            weeks: 0,
+            totalPoints: 0,
+            wildScalps: 0,
+            headHunter: 0,
+            assassinated: 0,
+            goldenSnitch: 0,
+            finalTable: 0,
+            outBeforeBreak: 0,
+          };
+        }
+
+        playerStats[player].weeks++;
+        playerStats[player].wildScalps += data.wildScalps || 0;
+        playerStats[player].headHunter += data.headHunter || 0;
+        playerStats[player].assassinated += data.assassinated ? 1 : 0;
+        playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
+        playerStats[player].finalTable += data.finalTable ? 1 : 0;
+        playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
+
+        playerStats[player].totalPoints += calculatePoints(data);
+      });
+
+      // Sort players by totalPoints descending
+      const sortedPlayers = Object.entries(playerStats)
+        .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
+
+      let rank = 1;
+      for (const [player, stats] of sortedPlayers) {
+        tbody.innerHTML += `
+          <tr>
+            <td>${rank++}</td>
+            <td>${player}</td>
+            <td>${stats.totalPoints}</td>
+            <td>${stats.wildScalps}</td>
+            <td>${stats.headHunter}</td>
+            <td>${stats.assassinated}</td>
+            <td>${stats.goldenSnitch || stats.goldenSnitch}</td>
+            <td>${stats.finalTable}</td>
+            <td>${stats.outBeforeBreak}</td>
+          </tr>
+        `;
+      }
+    }
+
+    function calculatePoints(data) {
+      let points = 0;
+      switch(data.venuePosition) {
+        case 1: points += 4; break;
+        case 2: points += 3; break;
+        case 3: points += 2; break;
+        case 4: points += 1; break;
+        case 5: points += 0; break;
+      }
+      points += (data.wildScalps || 0);
+      points += (data.headHunter || 0);
+      points += data.assassinated ? -1 : 0;
+      points += data.goldenSnitch ? 1 : 0;
+      points += data.finalTable ? 1 : 0;
+      points += data.outBeforeBreak ? -1 : 0;
+      return points;
+    }
+
+    loadLeaderboard();
+  </script>
+</body>
+</html>

@@ -32,12 +32,14 @@ loginBtn.addEventListener("click", async () => {
 
     // Simplified role detection based on password
     if (password === "Admin1") {
-      adminPanel.style.display = "block";
-      userPanel.style.display = "none";
-    } else {
-      adminPanel.style.display = "none";
-      userPanel.style.display = "block";
-    }
+     // Redirect admins to admin.html
+  window.location.href = 'admin.html';
+} else if (password === 'Password') {
+  // Redirect users to leaderboard.html
+  window.location.href = 'leaderboard.html';
+} else {
+  alert('Invalid password');
+}
 
   } catch (err) {
     loginError.textContent = err.message;

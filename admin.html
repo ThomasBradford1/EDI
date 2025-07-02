@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Score Submission</title>
+</head>
+<body>
+  <h2>Submit Weekly Scores</h2>
+  <form id="score-form">
+    <label>Week:
+      <input type="text" id="week" value="2025-W1" required />
+    </label><br><br>
+
+    <label>Player:
+      <select id="player">
+        <option>Micheal</option>
+        <option>Tom</option>
+        <option>Luke</option>
+        <option>Jeff</option>
+        <option>Jordan</option>
+      </select>
+    </label><br><br>
+
+    <label>Wild Scalps: <input type="number" id="wildScalps" min="0" value="0" /></label><br><br>
+    <label>Head Hunter: <input type="number" id="headHunter" min="0" value="0" /></label><br><br>
+    <label>Assassinated: <input type="checkbox" id="assassinated" /></label><br><br>
+    <label>Venue Position:
+      <select id="venuePosition">
+        <option value="1">1st</option>
+        <option value="2">2nd</option>
+        <option value="3">3rd</option>
+        <option value="4">4th</option>
+        <option value="5">5th</option>
+      </select>
+    </label><br><br>
+    <label>Golden Fitch: <input type="checkbox" id="goldenFitch" /></label><br><br>
+    <label>Final Table: <input type="checkbox" id="finalTable" /></label><br><br>
+    <label>Out Before Break: <input type="checkbox" id="outBeforeBreak" /></label><br><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <script type="module" src="admin.js"></script>
+</body>
+</html>
