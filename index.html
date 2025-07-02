@@ -4,25 +4,94 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fantasy Leaderboard Login</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #e8f5e9;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: #2e7d32;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    #login-container {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #c8e6c9;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+    }
+
+    #login-error {
+      margin-top: 10px;
+      color: red;
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      #login-container {
+        padding: 15px 20px;
+      }
+
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Login to Fantasy Leaderboard</h1>
+  <h1>Login to EDI WOULD GO!</h1>
   <div id="login-container">
-    <input id="email" type="email" placeholder="Email" /><br />
-    <input id="password" type="password" placeholder="Password" /><br />
+    <input id="email" type="email" placeholder="Email" required />
+    <input id="password" type="password" placeholder="Password" required />
     <button id="login-btn">Login</button>
-    <p id="login-error" style="color:red;"></p>
+    <p id="login-error"></p>
   </div>
 
   <div id="app-container" style="display:none;">
     <h2>Welcome, <span id="user-email"></span>!</h2>
     <div id="admin-panel" style="display:none;">
       <h3>Admin Dashboard (Score Input Form Coming Soon)</h3>
-      <!-- We'll add form here later -->
     </div>
     <div id="user-panel" style="display:none;">
       <h3>Leaderboard & Weekly Scores</h3>
-      <!-- Leaderboard and scores here -->
     </div>
     <button id="logout-btn">Logout</button>
   </div>
