@@ -32,7 +32,7 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
         timestamp: new Date()
       };
 
-      await setDoc(doc(db, 'scores', docId), scoreData);
+      await setDoc(doc(db, 'scores', docId), scoreData, { merge: true });
       console.log(`✅ Submitted for ${player}`);
     }
 
