@@ -9,7 +9,7 @@
       background-color: #f5f5f5;
     }
 
-    h2 {
+    h2, h3 {
       margin-bottom: 20px;
     }
 
@@ -68,6 +68,27 @@
     button:hover {
       background-color: #388E3C;
     }
+
+    .venue-rank-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      margin-top: 20px;
+    }
+
+    .venue-rank-group > div {
+      min-width: 160px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .venue-rank-group label {
+      font-weight: normal;
+      display: block;
+      margin: 4px 0;
+    }
   </style>
 </head>
 <body>
@@ -78,18 +99,20 @@
       <select id="week" name="week"></select>
     </label><br><br>
 
-    <div class="players-container" id="players-area">
-      <!-- Player inputs will be inserted here -->
-    </div>
+    <div class="players-container" id="players-area"></div>
 
     <button type="submit">Submit All Scores</button>
   </form>
 
+  <h3>Venue Leaderboard (Select Weekly Rankings)</h3>
+  <form id="venue-form">
+    <div class="venue-rank-group" id="venue-rank-group"></div>
+    <button type="submit">Submit Venue Rankings</button>
+  </form>
+
   <a href="leaderboard.html" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Leaderboard</a>
 
-  <!-- Place these AFTER the form elements so they can target the DOM -->
-  <script>
-    // Generate week dropdown options
+  <script type="module">
     const weekSelect = document.getElementById('week');
     const startDate = new Date('2025-07-03');
     const numWeeks = 13;
@@ -116,7 +139,6 @@
 
     weekSelect.selectedIndex = selectedIndex;
 
-    // Generate player input columns
     const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
     const container = document.getElementById('players-area');
 
@@ -139,16 +161,6 @@
           <input type="checkbox" name="assassinated[${player}]" />
         </label>
 
-        <label>Venue Position:
-          <select name="venuePosition[${player}]">
-            <option value="1">1st</option>
-            <option value="2">2nd</option>
-            <option value="3">3rd</option>
-            <option value="4">4th</option>
-            <option value="5">5th</option>
-          </select>
-        </label>
-
         <label>Golden Snitch:
           <input type="checkbox" name="goldenSnitch[${player}]" />
         </label>
@@ -164,9 +176,21 @@
 
       container.appendChild(div);
     });
+
+    // Venue rank input generation
+    const venueGroup = document.getElementById('venue-rank-group');
+    for (let rank = 1; rank <= 5; rank++) {
+      const div = document.createElement('div');
+      div.innerHTML = `<strong>${rank} Place (${[4, 3, 2, 1, 0][rank - 1]} pts)</strong><br/>` +
+        players.map(player => `
+          <label>
+            <input type="checkbox" name="venueRank[${rank}][]" value="${player}"> ${player}
+          </label>
+        `).join('');
+      venueGroup.appendChild(div);
+    }
   </script>
 
-  <!-- Keep your Firebase/app logic last -->
   <script type="module" src="admin.js"></script>
 </body>
 </html>

@@ -1,6 +1,12 @@
 import { db } from './firebaseConfig.js';
-import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
+import {
+  doc,
+  setDoc,
+  getDocs,
+  collection
+} from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
+// Submit player scores
 document.getElementById('score-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -13,7 +19,6 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
       const wildScalps = parseInt(formData.get(`wildScalps[${player}]`)) || 0;
       const headHunter = parseInt(formData.get(`headHunter[${player}]`)) || 0;
       const assassinated = formData.get(`assassinated[${player}]`) === "on";
-      const venuePosition = parseInt(formData.get(`venuePosition[${player}]`)) || null;
       const goldenSnitch = formData.get(`goldenSnitch[${player}]`) === "on";
       const finalTable = formData.get(`finalTable[${player}]`) === "on";
       const outBeforeBreak = formData.get(`outBeforeBreak[${player}]`) === "on";
@@ -25,7 +30,6 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
         wildScalps,
         headHunter,
         assassinated,
-        venuePosition,
         goldenSnitch,
         finalTable,
         outBeforeBreak,
@@ -33,13 +37,48 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
       };
 
       await setDoc(doc(db, 'scores', docId), scoreData, { merge: true });
-      console.log(`✅ Submitted for ${player}`);
     }
 
     alert('All scores submitted successfully!');
-    document.getElementById('score-form').reset();
+    e.target.reset();
   } catch (error) {
-    alert('❌ Error submitting scores: ' + error.message);
+    alert('Error submitting scores: ' + error.message);
     console.error(error);
+  }
+});
+
+// Submit venue rankings
+document.getElementById('venue-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const week = document.getElementById('week').value;
+
+  const venuePoints = { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 };
+  const newScores = {};
+
+  for (let i = 1; i <= 5; i++) {
+    const selected = formData.getAll(`venueRank[${i}][]`);
+    selected.forEach(player => {
+      newScores[player] = venuePoints[i];
+    });
+  }
+
+  try {
+    const prevData = await getDocs(collection(db, 'venueTotals'));
+    const prevTotals = {};
+    prevData.forEach(doc => {
+      prevTotals[doc.id] = doc.data().total || 0;
+    });
+
+    for (const [player, newScore] of Object.entries(newScores)) {
+      const docRef = doc(db, 'venueTotals', player);
+      await setDoc(docRef, { total: newScore, updatedAt: new Date() }, { merge: true });
+    }
+
+    alert("Venue rankings updated!");
+    e.target.reset();
+  } catch (err) {
+    console.error(err);
+    alert("Error updating venue rankings");
   }
 });
