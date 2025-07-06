@@ -177,7 +177,7 @@
       // Merge in points from venueTotals
       venueSnapshot.forEach(doc => {
         const data = doc.data();
-        const player = data.player;
+        const player = data.player || doc.id; // ✅ Fallback to document ID
 
         if (!playerStats[player]) {
           playerStats[player] = {

@@ -6,7 +6,7 @@ import {
   collection
 } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
-// Submit player scores
+// Submit player scores (main score form)
 document.getElementById('score-form').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -47,7 +47,7 @@ document.getElementById('score-form').addEventListener('submit', async (e) => {
   }
 });
 
-// Submit venue rankings
+// Submit venue rankings (venue leaderboard form)
 document.getElementById('venue-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const formData = new FormData(e.target);
@@ -56,6 +56,7 @@ document.getElementById('venue-form').addEventListener('submit', async (e) => {
   const venuePoints = { 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 };
   const newScores = {};
 
+  // Gather selected players for each rank
   for (let i = 1; i <= 5; i++) {
     const selected = formData.getAll(`venueRank[${i}][]`);
     selected.forEach(player => {
@@ -72,7 +73,11 @@ document.getElementById('venue-form').addEventListener('submit', async (e) => {
 
     for (const [player, newScore] of Object.entries(newScores)) {
       const docRef = doc(db, 'venueTotals', player);
-      await setDoc(docRef, { total: newScore, updatedAt: new Date() }, { merge: true });
+      await setDoc(docRef, {
+        player: player,              // ✅ Add explicit player field
+        total: newScore,            // ✅ This is replacing total, not adding to it
+        updatedAt: new Date()
+      }, { merge: true });
     }
 
     alert("Venue rankings updated!");
