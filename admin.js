@@ -60,7 +60,10 @@ document.getElementById('venue-form').addEventListener('submit', async (e) => {
   for (let i = 1; i <= 5; i++) {
     const selected = formData.getAll(`venueRank[${i}][]`);
     selected.forEach(player => {
-      newScores[player] = venuePoints[i];
+      newScores[player] = {
+        points: venuePoints[i],
+        rank: i
+      };
     });
   }
 
@@ -71,11 +74,12 @@ document.getElementById('venue-form').addEventListener('submit', async (e) => {
       prevTotals[doc.id] = doc.data().total || 0;
     });
 
-    for (const [player, newScore] of Object.entries(newScores)) {
+    for (const [player, { points, rank }] of Object.entries(newScores)) {
       const docRef = doc(db, 'venueTotals', player);
       await setDoc(docRef, {
-        player: player,              // ✅ Add explicit player field
-        total: newScore,            // ✅ This is replacing total, not adding to it
+        player: player,
+        total: points,                  // ✅ Store actual number, not object
+        latestVenueRank: rank,         // ✅ Store the rank separately
         updatedAt: new Date()
       }, { merge: true });
     }

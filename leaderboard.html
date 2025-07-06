@@ -152,16 +152,8 @@
             goldenSnitch: 0,
             finalTable: 0,
             outBeforeBreak: 0,
-            latestWeek: '',
-            latestVenuePosition: '-'
+            latestVenuePosition: '-',  // Will be updated later
           };
-        }
-
-        // Update latest venue position if it's newer
-        if (data.venuePosition !== undefined &&
-            (!playerStats[player].latestWeek || data.week > playerStats[player].latestWeek)) {
-          playerStats[player].latestWeek = data.week;
-          playerStats[player].latestVenuePosition = data.venuePosition;
         }
 
         playerStats[player].wildScalps += data.wildScalps || 0;
@@ -174,10 +166,10 @@
         playerStats[player].totalPoints += calculatePoints(data);
       });
 
-      // Merge in points from venueTotals
+      // Merge in points and venue rank from venueTotals
       venueSnapshot.forEach(doc => {
         const data = doc.data();
-        const player = data.player || doc.id; // ✅ Fallback to document ID
+        const player = data.player;
 
         if (!playerStats[player]) {
           playerStats[player] = {
@@ -188,14 +180,17 @@
             goldenSnitch: 0,
             finalTable: 0,
             outBeforeBreak: 0,
-            latestWeek: '',
             latestVenuePosition: '-'
           };
         }
 
-       playerStats[player].totalPoints += parseInt(data.total) || 0;
+        // Add points from venue leaderboard
+        playerStats[player].totalPoints += parseInt(data.total) || 0;
 
-
+        // Add latest venue position if available
+        if (data.latestVenueRank !== undefined) {
+          playerStats[player].latestVenuePosition = data.latestVenueRank;
+        }
       });
 
       const sortedPlayers = Object.entries(playerStats)
