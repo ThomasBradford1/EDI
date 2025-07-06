@@ -193,14 +193,8 @@
           };
         }
 
-        const venuePos = parseInt(data.venuePosition);
-const venueScore = venuePos === 1 ? 4 :
-                   venuePos === 2 ? 3 :
-                   venuePos === 3 ? 2 :
-                   venuePos === 4 ? 1 :
-                   venuePos === 5 ? 0 : 0;
+       playerStats[player].totalPoints += parseInt(data.total) || 0;
 
-playerStats[player].totalPoints += venueScore;
 
       });
 
