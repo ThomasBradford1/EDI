@@ -26,7 +26,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 600px; /* force scroll on mobile if needed */
+      min-width: 600px;
     }
 
     thead tr {
@@ -43,11 +43,8 @@
       border-bottom: 1px solid #c6e0b4;
       text-align: center;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
-    /* Bold + green for key columns */
     th:nth-child(1), td:nth-child(1),
     th:nth-child(2), td:nth-child(2),
     th:nth-child(3), td:nth-child(3) {
@@ -55,13 +52,11 @@
       color: #2e7d32;
     }
 
-    /* Smaller stats */
     th:nth-child(n+4), td:nth-child(n+4) {
       font-size: 0.85rem;
       color: #555;
     }
 
-    /* Button styles */
     a.button {
       display: inline-block;
       margin: 10px 5px;
@@ -75,6 +70,16 @@
 
     a#adminButton {
       background-color: #444;
+    }
+
+    #logout-btn {
+      margin-top: 20px;
+      padding: 8px 15px;
+      background-color: #e53935;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -105,128 +110,137 @@
       </tbody>
     </table>
   </div>
-  <button id="logout-btn" style="margin-top: 20px; padding: 8px 15px; background-color: #e53935; color: white; border: none; border-radius: 4px; cursor: pointer;">
-  Logout
-</button>
 
+  <button id="logout-btn">Logout</button>
 
   <script type="module">
-  import { db } from './firebaseConfig.js';
-  import {
-    collection,
-    getDocs,
-    doc,
-    getDoc
-  } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+    import { db } from './firebaseConfig.js';
+    import {
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
 
-  async function loadLeaderboard() {
-  if (localStorage.getItem("isAdmin") === "true") {
-    document.getElementById("adminButton").style.display = "inline-block";
-  }
+    async function loadLeaderboard() {
+      if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("adminButton").style.display = "inline-block";
+      }
 
-  const tbody = document.getElementById('leaderboard-body');
-  tbody.innerHTML = '';
+      const tbody = document.getElementById('leaderboard-body');
+      tbody.innerHTML = '';
 
-  const scoresSnapshot = await getDocs(collection(db, "scores"));
-  if (scoresSnapshot.empty) {
-    tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
-    return;
-  }
+      const scoresSnapshot = await getDocs(collection(db, "scores"));
+      const venueSnapshot = await getDocs(collection(db, "venueTotals"));
 
-  const playerStats = {};
+      if (scoresSnapshot.empty && venueSnapshot.empty) {
+        tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
+        return;
+      }
 
-  scoresSnapshot.forEach(doc => {
-    const data = doc.data();
-    const player = data.player || 'Unknown';
+      const playerStats = {};
 
-    if (!playerStats[player]) {
-      playerStats[player] = {
-        totalPoints: 0,
-        wildScalps: 0,
-        headHunter: 0,
-        assassinated: 0,
-        goldenSnitch: 0,
-        finalTable: 0,
-        outBeforeBreak: 0,
-        latestWeek: '',
-        latestVenuePosition: '-'
-      };
+      // Process scores collection
+      scoresSnapshot.forEach(doc => {
+        const data = doc.data();
+        const player = data.player || 'Unknown';
+
+        if (!playerStats[player]) {
+          playerStats[player] = {
+            totalPoints: 0,
+            wildScalps: 0,
+            headHunter: 0,
+            assassinated: 0,
+            goldenSnitch: 0,
+            finalTable: 0,
+            outBeforeBreak: 0,
+            latestWeek: '',
+            latestVenuePosition: '-'
+          };
+        }
+
+        // Update latest venue position if it's newer
+        if (data.venuePosition !== undefined &&
+            (!playerStats[player].latestWeek || data.week > playerStats[player].latestWeek)) {
+          playerStats[player].latestWeek = data.week;
+          playerStats[player].latestVenuePosition = data.venuePosition;
+        }
+
+        playerStats[player].wildScalps += data.wildScalps || 0;
+        playerStats[player].headHunter += data.headHunter || 0;
+        playerStats[player].assassinated += data.assassinated ? 1 : 0;
+        playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
+        playerStats[player].finalTable += data.finalTable ? 1 : 0;
+        playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
+
+        playerStats[player].totalPoints += calculatePoints(data);
+      });
+
+      // Merge in points from venueTotals
+      venueSnapshot.forEach(doc => {
+        const data = doc.data();
+        const player = data.player;
+
+        if (!playerStats[player]) {
+          playerStats[player] = {
+            totalPoints: 0,
+            wildScalps: 0,
+            headHunter: 0,
+            assassinated: 0,
+            goldenSnitch: 0,
+            finalTable: 0,
+            outBeforeBreak: 0,
+            latestWeek: '',
+            latestVenuePosition: '-'
+          };
+        }
+
+        playerStats[player].totalPoints += parseInt(data.venuePoints) || 0;
+      });
+
+      const sortedPlayers = Object.entries(playerStats)
+        .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
+
+      let rank = 1;
+      for (const [player, stats] of sortedPlayers) {
+        tbody.innerHTML += `
+          <tr>
+            <td>${rank++}</td>
+            <td>${player}</td>
+            <td>${stats.totalPoints}</td>
+            <td>${stats.wildScalps}</td>
+            <td>${stats.headHunter}</td>
+            <td>${stats.latestVenuePosition}</td>
+            <td>${stats.assassinated}</td>
+            <td>${stats.goldenSnitch}</td>
+            <td>${stats.finalTable}</td>
+            <td>${stats.outBeforeBreak}</td>
+          </tr>
+        `;
+      }
     }
 
-    // Update only if venuePosition exists and week is newer
-    if (
-      data.venuePosition !== undefined &&
-      (!playerStats[player].latestWeek || data.week > playerStats[player].latestWeek)
-    ) {
-      playerStats[player].latestWeek = data.week;
-      playerStats[player].latestVenuePosition = data.venuePosition;
+    function calculatePoints(data) {
+      let points = 0;
+      points += parseInt(data.wildScalps) || 0;
+      points += parseInt(data.headHunter) || 0;
+      points += data.assassinated ? -1 : 0;
+      points += data.goldenSnitch ? 1 : 0;
+      points += data.finalTable ? 1 : 0;
+      points += data.outBeforeBreak ? -1 : 0;
+      return points;
     }
 
-    playerStats[player].wildScalps += data.wildScalps || 0;
-    playerStats[player].headHunter += data.headHunter || 0;
-    playerStats[player].assassinated += data.assassinated ? 1 : 0;
-    playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
-    playerStats[player].finalTable += data.finalTable ? 1 : 0;
-    playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
+    loadLeaderboard();
+  </script>
 
-    playerStats[player].totalPoints += calculatePoints(data);
-  });
-
-  const sortedPlayers = Object.entries(playerStats)
-    .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
-
-  let rank = 1;
-  for (const [player, stats] of sortedPlayers) {
-    tbody.innerHTML += `
-      <tr>
-        <td>${rank++}</td>
-        <td>${player}</td>
-        <td>${stats.totalPoints}</td>
-        <td>${stats.wildScalps}</td>
-        <td>${stats.headHunter}</td>
-        <td>${stats.latestVenuePosition}</td>
-        <td>${stats.assassinated}</td>
-        <td>${stats.goldenSnitch}</td>
-        <td>${stats.finalTable}</td>
-        <td>${stats.outBeforeBreak}</td>
-      </tr>
-    `;
-  }
-}
-
-
-  // 5️⃣ Updated point calculation includes venue total
-  async function calculatePoints(data, venueTotals) {
-    let points = 0;
-    points += (data.wildScalps || 0);
-    points += (data.headHunter || 0);
-    points += data.assassinated ? -1 : 0;
-    points += data.goldenSnitch ? 1 : 0;
-    points += data.finalTable ? 1 : 0;
-    points += data.outBeforeBreak ? -1 : 0;
-
-    if (venueTotals[data.player]) {
-      points += venueTotals[data.player];
-    }
-
-    return points;
-  }
-
-  loadLeaderboard();
-</script>
-
-   <script type="module">
+  <script type="module">
     import { auth } from './firebaseConfig.js';
     import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
 
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-        localStorage.removeItem("isAdmin");
-        window.location.href = 'index.html';
-      });
-    }
+    document.getElementById('logout-btn')?.addEventListener('click', async () => {
+      await signOut(auth);
+      localStorage.removeItem("isAdmin");
+      window.location.href = 'index.html';
+    });
   </script>
 </body>
 </html>
