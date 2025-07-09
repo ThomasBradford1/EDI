@@ -1,27 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Admin Score Submission</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 30px;
+      padding: 20px;
+      margin: 0 auto;
       background-color: #f5f5f5;
+      color: #333;
+      max-width: 1100px;
     }
 
     h2, h3 {
+      text-align: center;
+      color: #2e7d32;
       margin-bottom: 20px;
+    }
+
+    form {
+      margin-bottom: 40px;
     }
 
     label {
       font-weight: bold;
+      display: block;
+      margin-top: 10px;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 6px 10px;
+      margin-top: 4px;
+      font-size: 1rem;
+    }
+
+    input[type="checkbox"] {
+      transform: scale(1.2);
+      margin-right: 6px;
     }
 
     .players-container {
       display: flex;
+      flex-wrap: wrap;
       gap: 20px;
-      overflow-x: auto;
-      flex-wrap: nowrap;
+      justify-content: center;
+      margin-top: 20px;
     }
 
     .player-column {
@@ -30,39 +56,28 @@
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       flex: 1;
-      min-width: 220px;
+      min-width: 230px;
+      max-width: 250px;
     }
 
     .player-column h3 {
       text-align: center;
       margin-bottom: 15px;
-    }
-
-    .player-column label {
-      display: block;
-      margin-top: 10px;
-    }
-
-    input[type="number"], select {
-      width: 100%;
-      padding: 5px;
-      font-size: 1rem;
-    }
-
-    input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-left: 5px;
+      color: #388e3c;
     }
 
     button {
       margin-top: 30px;
-      padding: 10px 20px;
+      padding: 10px 25px;
       background-color: #4CAF50;
       color: white;
       border: none;
       border-radius: 5px;
       font-size: 1rem;
       cursor: pointer;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     button:hover {
@@ -73,13 +88,14 @@
       display: flex;
       flex-wrap: wrap;
       gap: 30px;
+      justify-content: center;
       margin-top: 20px;
     }
 
     .venue-rank-group > div {
       min-width: 160px;
-      background: #fff;
-      padding: 10px;
+      background: white;
+      padding: 12px;
       border-radius: 8px;
       box-shadow: 0 0 5px rgba(0,0,0,0.1);
     }
@@ -89,6 +105,18 @@
       display: block;
       margin: 4px 0;
     }
+
+    a.button {
+      display: inline-block;
+      margin: 20px auto 0;
+      padding: 10px 15px;
+      background-color: #4CAF50;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1rem;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -97,20 +125,21 @@
   <form id="score-form">
     <label for="week">Week:
       <select id="week" name="week"></select>
-    </label><br><br>
+    </label>
 
     <div class="players-container" id="players-area"></div>
 
     <button type="submit">Submit All Scores</button>
   </form>
 
-  <h3>Venue Leaderboard (Select Weekly Rankings)</h3>
+  <h3>Venue Leaderboard – Weekly Rankings</h3>
+
   <form id="venue-form">
     <div class="venue-rank-group" id="venue-rank-group"></div>
     <button type="submit">Submit Venue Rankings</button>
   </form>
 
-  <a href="leaderboard.html" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">View Leaderboard</a>
+  <a class="button" href="leaderboard.html">← Back to Leaderboard</a>
 
   <script type="module">
     const weekSelect = document.getElementById('week');
@@ -148,36 +177,21 @@
 
       div.innerHTML = `
         <h3>${player}</h3>
-
         <label>Wild Scalps:
           <input type="number" name="wildScalps[${player}]" min="0" value="0" />
         </label>
-
         <label>Head Hunter:
           <input type="number" name="headHunter[${player}]" min="0" value="0" />
         </label>
-
-        <label>Assassinated:
-          <input type="checkbox" name="assassinated[${player}]" />
-        </label>
-
-        <label>Golden Snitch:
-          <input type="checkbox" name="goldenSnitch[${player}]" />
-        </label>
-
-        <label>Final Table:
-          <input type="checkbox" name="finalTable[${player}]" />
-        </label>
-
-        <label>Out Before Break:
-          <input type="checkbox" name="outBeforeBreak[${player}]" />
-        </label>
+        <label><input type="checkbox" name="assassinated[${player}]" /> Assassinated</label>
+        <label><input type="checkbox" name="goldenSnitch[${player}]" /> Golden Snitch</label>
+        <label><input type="checkbox" name="finalTable[${player}]" /> Final Table</label>
+        <label><input type="checkbox" name="outBeforeBreak[${player}]" /> Out Before Break</label>
       `;
 
       container.appendChild(div);
     });
 
-    // Venue rank input generation
     const venueGroup = document.getElementById('venue-rank-group');
     for (let rank = 1; rank <= 5; rank++) {
       const div = document.createElement('div');
