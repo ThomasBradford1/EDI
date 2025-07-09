@@ -6,10 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      padding: 10px;
-      margin: 0 auto;
-      max-width: 100%;
+      margin: 0;
       font-family: Arial, sans-serif;
+      background-image: url('backgroundPIC.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+    }
+
+    .overlay {
+      background-color: rgba(255, 255, 255, 0.85);
+      padding: 20px;
+      max-width: 1200px;
+      margin: auto;
+      border-radius: 10px;
     }
 
     h1 {
@@ -84,34 +95,36 @@
   </style>
 </head>
 <body>
-  <h1>EDI WOULD GO</h1>
+  <div class="overlay">
+    <h1>EDI WOULD GO</h1>
 
-  <a class="button" href="weekscores.html">View Weekly Scores</a>
-  <a id="adminButton" class="button" href="admin.html" style="display: none;">Admin Panel</a>
+    <a class="button" href="weekscores.html">View Weekly Scores</a>
+    <a id="adminButton" class="button" href="admin.html" style="display: none;">Admin Panel</a>
 
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Rank</th>
-          <th>Player</th>
-          <th>Points</th>
-          <th>Wild Scalps</th>
-          <th>Head Hunter</th>
-          <th>Venue Pos (latest)</th>
-          <th>Assassinated</th>
-          <th>Golden Snitch</th>
-          <th>Final Table</th>
-          <th>Out Before Break</th>
-        </tr>
-      </thead>
-      <tbody id="leaderboard-body">
-        <tr><td colspan="10">Loading leaderboard...</td></tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Player</th>
+            <th>Points</th>
+            <th>Wild Scalps</th>
+            <th>Head Hunter</th>
+            <th>Venue Pos (latest)</th>
+            <th>Assassinated</th>
+            <th>Golden Snitch</th>
+            <th>Final Table</th>
+            <th>Out Before Break</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+          <tr><td colspan="10">Loading leaderboard...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button id="logout-btn">Logout</button>
   </div>
-
-  <button id="logout-btn">Logout</button>
 
   <script type="module">
     import { db } from './firebaseConfig.js';
@@ -184,10 +197,8 @@
           };
         }
 
-        // Add points from venue leaderboard
         playerStats[player].totalPoints += parseInt(data.total) || 0;
 
-        // Add latest venue position if available
         if (data.latestVenueRank !== undefined) {
           playerStats[player].latestVenuePosition = data.latestVenueRank;
         }
