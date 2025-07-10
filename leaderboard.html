@@ -5,15 +5,22 @@
   <title>Fantasy Leaderboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
+   body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-image: url('lol.png');
+  background-image: url('backgroundPIC.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: bottom right;
-  background-attachment: fixed; /* Optional: allows scrolling effect */
+  background-attachment: fixed;
+}
+
+/* Mobile adjustment: nudge background further right */
+@media (max-width: 600px) {
+  body {
+    background-position: bottom 0px right -30px; /* You can adjust -30px as needed */
+  }
 }
 
     .overlay {
