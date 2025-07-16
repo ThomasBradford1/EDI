@@ -135,128 +135,120 @@ body {
   </div>
 
   <script type="module">
-    import { db } from './firebaseConfig.js';
-    import {
-      collection,
-      getDocs
-    } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+  import { db } from './firebaseConfig.js';
+  import {
+    collection,
+    query,
+    where,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
 
-    async function loadLeaderboard() {
-      if (localStorage.getItem("isAdmin") === "true") {
-        document.getElementById("adminButton").style.display = "inline-block";
-      }
-
-      const tbody = document.getElementById('leaderboard-body');
-      tbody.innerHTML = '';
-
-      const scoresSnapshot = await getDocs(collection(db, "scores"));
-      const venueSnapshot = await getDocs(collection(db, "venueTotals"));
-
-      if (scoresSnapshot.empty && venueSnapshot.empty) {
-        tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
-        return;
-      }
-
-      const playerStats = {};
-
-      // Process scores collection
-      scoresSnapshot.forEach(doc => {
-        const data = doc.data();
-        const player = data.player || 'Unknown';
-
-        if (!playerStats[player]) {
-          playerStats[player] = {
-            totalPoints: 0,
-            wildScalps: 0,
-            headHunter: 0,
-            assassinated: 0,
-            goldenSnitch: 0,
-            finalTable: 0,
-            outBeforeBreak: 0,
-            latestVenuePosition: '-',  // Will be updated later
-          };
-        }
-
-        playerStats[player].wildScalps += data.wildScalps || 0;
-        playerStats[player].headHunter += data.headHunter || 0;
-        playerStats[player].assassinated += data.assassinated ? 1 : 0;
-        playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
-        playerStats[player].finalTable += data.finalTable ? 1 : 0;
-        playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
-
-        playerStats[player].totalPoints += calculatePoints(data);
-      });
-
-      // Merge in points and venue rank from venueTotals
-      venueSnapshot.forEach(doc => {
-        const data = doc.data();
-        const player = data.player;
-
-        if (!playerStats[player]) {
-          playerStats[player] = {
-            totalPoints: 0,
-            wildScalps: 0,
-            headHunter: 0,
-            assassinated: 0,
-            goldenSnitch: 0,
-            finalTable: 0,
-            outBeforeBreak: 0,
-            latestVenuePosition: '-'
-          };
-        }
-
-        playerStats[player].totalPoints += parseInt(data.total) || 0;
-
-        if (data.latestVenueRank !== undefined) {
-          playerStats[player].latestVenuePosition = data.latestVenueRank;
-        }
-      });
-
-      const sortedPlayers = Object.entries(playerStats)
-        .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
-
-      let rank = 1;
-      for (const [player, stats] of sortedPlayers) {
-        tbody.innerHTML += `
-          <tr>
-            <td>${rank++}</td>
-            <td>${player}</td>
-            <td>${stats.totalPoints}</td>
-            <td>${stats.wildScalps}</td>
-            <td>${stats.headHunter}</td>
-            <td>${stats.latestVenuePosition}</td>
-            <td>${stats.assassinated}</td>
-            <td>${stats.goldenSnitch}</td>
-            <td>${stats.finalTable}</td>
-            <td>${stats.outBeforeBreak}</td>
-          </tr>
-        `;
-      }
+  async function loadLeaderboard() {
+    if (localStorage.getItem("isAdmin") === "true") {
+      document.getElementById("adminButton").style.display = "inline-block";
     }
 
-    function calculatePoints(data) {
-      let points = 0;
-      points += parseInt(data.wildScalps) || 0;
-      points += parseInt(data.headHunter) || 0;
-      points += data.assassinated ? -1 : 0;
-      points += data.goldenSnitch ? 1 : 0;
-      points += data.finalTable ? 1 : 0;
-      points += data.outBeforeBreak ? -1 : 0;
-      return points;
+    const tbody = document.getElementById('leaderboard-body');
+    tbody.innerHTML = '';
+
+    // Query only submitted scores (ignore drafts)
+    const scoresQuery = query(collection(db, "scores"), where("submitted", "==", true));
+    const scoresSnapshot = await getDocs(scoresQuery);
+
+    const venueSnapshot = await getDocs(collection(db, "venueTotals"));
+
+    if (scoresSnapshot.empty && venueSnapshot.empty) {
+      tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
+      return;
     }
 
-    loadLeaderboard();
-  </script>
+    const playerStats = {};
 
-  <script type="module">
-    import { auth } from './firebaseConfig.js';
-    import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
+    // Process scores collection
+    scoresSnapshot.forEach(doc => {
+      const data = doc.data();
+      const player = data.player || 'Unknown';
 
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-      await signOut(auth);
-      localStorage.removeItem("isAdmin");
-      window.location.href = 'index.html';
+      if (!playerStats[player]) {
+        playerStats[player] = {
+          totalPoints: 0,
+          wildScalps: 0,
+          headHunter: 0,
+          assassinated: 0,
+          goldenSnitch: 0,
+          finalTable: 0,
+          outBeforeBreak: 0,
+          latestVenuePosition: '-',  // Will be updated later
+        };
+      }
+
+      playerStats[player].wildScalps += data.wildScalps || 0;
+      playerStats[player].headHunter += data.headHunter || 0;
+      playerStats[player].assassinated += data.assassinated ? 1 : 0;
+      playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
+      playerStats[player].finalTable += data.finalTable ? 1 : 0;
+      playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
+
+      playerStats[player].totalPoints += calculatePoints(data);
     });
-  </script>
-</body>
-</html>
+
+    // Merge in points and venue rank from venueTotals
+    venueSnapshot.forEach(doc => {
+      const data = doc.data();
+      const player = data.player;
+
+      if (!playerStats[player]) {
+        playerStats[player] = {
+          totalPoints: 0,
+          wildScalps: 0,
+          headHunter: 0,
+          assassinated: 0,
+          goldenSnitch: 0,
+          finalTable: 0,
+          outBeforeBreak: 0,
+          latestVenuePosition: '-'
+        };
+      }
+
+      playerStats[player].totalPoints += parseInt(data.total) || 0;
+
+      if (data.latestVenueRank !== undefined) {
+        playerStats[player].latestVenuePosition = data.latestVenueRank;
+      }
+    });
+
+    const sortedPlayers = Object.entries(playerStats)
+      .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
+
+    let rank = 1;
+    for (const [player, stats] of sortedPlayers) {
+      tbody.innerHTML += `
+        <tr>
+          <td>${rank++}</td>
+          <td>${player}</td>
+          <td>${stats.totalPoints}</td>
+          <td>${stats.wildScalps}</td>
+          <td>${stats.headHunter}</td>
+          <td>${stats.latestVenuePosition}</td>
+          <td>${stats.assassinated}</td>
+          <td>${stats.goldenSnitch}</td>
+          <td>${stats.finalTable}</td>
+          <td>${stats.outBeforeBreak}</td>
+        </tr>
+      `;
+    }
+  }
+
+  function calculatePoints(data) {
+    let points = 0;
+    points += parseInt(data.wildScalps) || 0;
+    points += parseInt(data.headHunter) || 0;
+    points += data.assassinated ? -1 : 0;
+    points += data.goldenSnitch ? 1 : 0;
+    points += data.finalTable ? 1 : 0;
+    points += data.outBeforeBreak ? -1 : 0;
+    return points;
+  }
+
+  loadLeaderboard();
+</script>
