@@ -146,3 +146,41 @@ window.addEventListener('DOMContentLoaded', () => {
   const selectedWeek = document.getElementById('week').value;
   loadScoresForWeek(selectedWeek);
 });
+document.getElementById('venue-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const week = document.getElementById('week').value;
+  const form = e.target;
+  const venueData = [];
+
+  // Loop over ranks 1 to 5
+  for (let rank = 1; rank <= 5; rank++) {
+    const checkboxes = form.querySelectorAll(`input[name="venueRank[${rank}][]"]:checked`);
+    checkboxes.forEach((checkbox) => {
+      venueData.push({
+        player: checkbox.value,
+        points: [4, 3, 2, 1, 0][rank - 1],  // Points based on rank
+        rank,
+      });
+    });
+  }
+
+  try {
+    for (const entry of venueData) {
+      const docId = `${week}_${entry.player}`;
+      await setDoc(doc(db, 'venueTotals', docId), {
+        player: entry.player,
+        week,
+        total: entry.points,
+        latestVenueRank: entry.rank,
+        timestamp: new Date(),
+      }, { merge: true });
+    }
+
+    alert('Venue leaderboard submitted successfully!');
+    e.target.reset(); // optional: clear form after submit
+  } catch (error) {
+    console.error(error);
+    alert('Error submitting venue leaderboard: ' + error.message);
+  }
+});
