@@ -161,6 +161,13 @@
 
       weekSelect.appendChild(option);
     }
+    
+    const homeGameOption = document.createElement('option');
+    homeGameOption.value = "home-game";
+    homeGameOption.textContent = "Home Game";
+    weekSelect.appendChild(homeGameOption);
+
+    weekSelect.selectedIndex = selectedIndex;
 
     weekSelect.selectedIndex = selectedIndex;
 
