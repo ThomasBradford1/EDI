@@ -10,16 +10,30 @@
     body {
       margin: 0;
       padding: 0;
-      background-image: url('comic_bg.png'); /* your renamed image in project folder */
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center;
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
+
+      /* Background image */
+      background-image: url('comic_bg.png');
+      background-size: cover;           /* fills screen */
+      background-position: center top;  /* show top part on mobile */
+      background-repeat: no-repeat;
+    }
+
+    /* Optional overlay for readability */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.3); /* subtle dark overlay */
+      z-index: -1;
     }
 
     /* --- Login Container --- */
@@ -73,6 +87,7 @@
       text-align: center;
     }
 
+    /* --- Responsive adjustments --- */
     @media (max-width: 480px) {
       #login-container {
         padding: 20px;
