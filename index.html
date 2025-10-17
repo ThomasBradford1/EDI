@@ -6,56 +6,40 @@
   <title>Fantasy Leaderboard Login</title>
 
   <style>
-    /* --- Base Layout --- */
-    body {
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+    }
+
+    /* --- Left: Login Box --- */
+    #login-container {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
-
-      /* Background image */
-      background-image: url('comic_bg.png');
-      background-size: cover;           /* fills screen */
-      background-position: center top;  /* show top part on mobile */
-      background-repeat: no-repeat;
+      align-items: center;
+      padding: 40px;
+      background-color: #f8f8f8; /* light background for readability */
     }
 
-    /* Optional overlay for readability */
-    body::before {
-      content: "";
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.3); /* subtle dark overlay */
-      z-index: -1;
-    }
-
-    /* --- Login Container --- */
-    #login-container {
-      background: rgba(255, 255, 255, 0.95);
-      padding: 25px 35px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-      width: 100%;
-      max-width: 400px;
-      text-align: center;
-    }
-
-    h1 {
+    #login-container h1 {
       color: #2e7d32;
       margin-bottom: 20px;
-      font-size: 1.8rem;
+      font-size: 2rem;
     }
 
-    input[type="email"],
-    input[type="password"] {
+    #login-container input[type="email"],
+    #login-container input[type="password"] {
       width: 100%;
+      max-width: 300px;
       padding: 10px;
       margin: 10px 0;
       border: 1px solid #c8e6c9;
@@ -63,8 +47,9 @@
       font-size: 1rem;
     }
 
-    button {
+    #login-container button {
       width: 100%;
+      max-width: 300px;
       padding: 10px;
       background-color: #4caf50;
       color: white;
@@ -76,7 +61,7 @@
       transition: background-color 0.3s ease;
     }
 
-    button:hover {
+    #login-container button:hover {
       background-color: #388e3c;
     }
 
@@ -87,20 +72,36 @@
       text-align: center;
     }
 
+    /* --- Right: Background Image --- */
+    #image-side {
+      flex: 1;
+      background-image: url('comic_bg.png');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+    }
+
     /* --- Responsive adjustments --- */
-    @media (max-width: 480px) {
-      #login-container {
-        padding: 20px;
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
       }
 
-      h1 {
-        font-size: 1.4rem;
+      #login-container, #image-side {
+        flex: none;
+        width: 100%;
+        height: 50vh;
+      }
+
+      #login-container {
+        padding: 20px;
       }
     }
   </style>
 </head>
 
 <body>
+  <!-- Left: Login -->
   <div id="login-container">
     <h1>Fantasy Leaderboard</h1>
     <input id="email" type="email" placeholder="Email" required />
@@ -109,16 +110,8 @@
     <p id="login-error"></p>
   </div>
 
-  <div id="app-container" style="display:none;">
-    <h2>Welcome, <span id="user-email"></span>!</h2>
-    <div id="admin-panel" style="display:none;">
-      <h3>Admin Dashboard (Score Input Form Coming Soon)</h3>
-    </div>
-    <div id="user-panel" style="display:none;">
-      <h3>Leaderboard & Weekly Scores</h3>
-    </div>
-    <button id="logout-btn">Logout</button>
-  </div>
+  <!-- Right: Image -->
+  <div id="image-side"></div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app-compat.js"></script>
