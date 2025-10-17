@@ -79,6 +79,12 @@
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
+      min-height: 100vh;
+    }
+
+    /* --- Hidden app container (required by app.js) --- */
+    #app-container {
+      display: none;
     }
 
     /* --- Responsive adjustments --- */
@@ -112,6 +118,18 @@
 
   <!-- Right: Image -->
   <div id="image-side"></div>
+
+  <!-- Hidden app container required by app.js -->
+  <div id="app-container">
+    <h2>Welcome, <span id="user-email"></span>!</h2>
+    <div id="admin-panel" style="display:none;">
+      <h3>Admin Dashboard</h3>
+    </div>
+    <div id="user-panel" style="display:none;">
+      <h3>Leaderboard & Weekly Scores</h3>
+    </div>
+    <button id="logout-btn">Logout</button>
+  </div>
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app-compat.js"></script>
