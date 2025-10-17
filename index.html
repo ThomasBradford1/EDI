@@ -76,8 +76,8 @@
     #image-side {
       flex: 1;
       background-image: url('comic_bg.png');
-      background-size: contain;       /* scale image to fit container */
-      background-position: center;    /* center the image */
+      background-size: contain;
+      background-position: center;
       background-repeat: no-repeat;
     }
 
@@ -118,8 +118,10 @@
   <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore-compat.js"></script>
 
-  <!-- Your Firebase config and app scripts -->
+  <!-- Your Firebase config -->
   <script type="module" src="firebaseConfig.js"></script>
+
+  <!-- Login logic -->
   <script type="module" src="app.js"></script>
 </body>
 </html>
