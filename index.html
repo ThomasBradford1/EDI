@@ -27,7 +27,7 @@
       justify-content: center;
       align-items: center;
       padding: 40px;
-      background-color: #f8f8f8; /* light background for readability */
+      background-color: #f8f8f8;
     }
 
     #login-container h1 {
@@ -76,8 +76,8 @@
     #image-side {
       flex: 1;
       background-image: url('comic_bg.png');
-      background-size: cover;
-      background-position: center;
+      background-size: contain;       /* scale image to fit container */
+      background-position: center;    /* center the image */
       background-repeat: no-repeat;
     }
 
