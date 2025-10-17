@@ -8,81 +8,18 @@
   <style>
     /* --- Base Layout --- */
     body {
-  margin: 0;
-  padding: 0;
-  background-image: url('comic_bg.png'); /* your new image */
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  backdrop-filter: brightness(0.9);
-}
-
-
-    /* --- Animated Background --- */
-    .poker-bg {
-      position: absolute;
-      inset: 0;
-      overflow: hidden;
-      z-index: -1;
-    }
-
-    .poker-bg span {
-      position: absolute;
-      display: block;
-      width: 80px;
-      height: 80px;
-      background-size: contain;
+      margin: 0;
+      padding: 0;
+      background-image: url('comic_bg.png'); /* your renamed image in project folder */
+      background-size: cover;
       background-repeat: no-repeat;
-      opacity: 0.15;
-      animation: float 20s linear infinite;
-    }
-
-    .poker-bg span:nth-child(1) {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616408.png');
-      top: 10%;
-      left: 20%;
-      animation-delay: 0s;
-    }
-
-    .poker-bg span:nth-child(2) {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616412.png');
-      top: 30%;
-      left: 60%;
-      animation-delay: 5s;
-    }
-
-    .poker-bg span:nth-child(3) {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616410.png');
-      top: 60%;
-      left: 40%;
-      animation-delay: 10s;
-    }
-
-    .poker-bg span:nth-child(4) {
-      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616414.png');
-      top: 80%;
-      left: 70%;
-      animation-delay: 15s;
-    }
-
-    @keyframes float {
-      0% {
-        transform: translateY(0) rotate(0deg);
-        opacity: 0.1;
-      }
-      50% {
-        opacity: 0.25;
-      }
-      100% {
-        transform: translateY(-800px) rotate(360deg);
-        opacity: 0;
-      }
+      background-position: center;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
     }
 
     /* --- Login Container --- */
@@ -149,11 +86,6 @@
 </head>
 
 <body>
-  <!-- Animated Poker Background -->
-  <div class="poker-bg">
-    <span></span><span></span><span></span><span></span>
-  </div>
-
   <div id="login-container">
     <h1>Fantasy Leaderboard</h1>
     <input id="email" type="email" placeholder="Email" required />
