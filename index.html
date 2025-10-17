@@ -4,38 +4,99 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Fantasy Leaderboard Login</title>
+
   <style>
-   body {
-  margin: 0;
-  padding: 0;
-  background-image: url('ediwouldgo.png');
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
+    /* --- Base Layout --- */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      background-color: #0b0b0b;
+      position: relative;
+    }
 
-  font-family: Arial, sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
+    /* --- Animated Background --- */
+    .poker-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
 
+    .poker-bg span {
+      position: absolute;
+      display: block;
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      opacity: 0.15;
+      animation: float 20s linear infinite;
+    }
+
+    .poker-bg span:nth-child(1) {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616408.png');
+      top: 10%;
+      left: 20%;
+      animation-delay: 0s;
+    }
+
+    .poker-bg span:nth-child(2) {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616412.png');
+      top: 30%;
+      left: 60%;
+      animation-delay: 5s;
+    }
+
+    .poker-bg span:nth-child(3) {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616410.png');
+      top: 60%;
+      left: 40%;
+      animation-delay: 10s;
+    }
+
+    .poker-bg span:nth-child(4) {
+      background-image: url('https://cdn-icons-png.flaticon.com/512/616/616414.png');
+      top: 80%;
+      left: 70%;
+      animation-delay: 15s;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 0.1;
+      }
+      50% {
+        opacity: 0.25;
+      }
+      100% {
+        transform: translateY(-800px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* --- Login Container --- */
+    #login-container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 25px 35px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
 
     h1 {
       color: #2e7d32;
       margin-bottom: 20px;
-      text-align: center;
-    }
-
-    #login-container {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-      width: 100%;
-      max-width: 400px;
-      margin-top: 150px;
+      font-size: 1.8rem;
     }
 
     input[type="email"],
@@ -58,6 +119,7 @@
       border-radius: 5px;
       cursor: pointer;
       margin-top: 10px;
+      transition: background-color 0.3s ease;
     }
 
     button:hover {
@@ -73,18 +135,24 @@
 
     @media (max-width: 480px) {
       #login-container {
-        padding: 15px 20px;
+        padding: 20px;
       }
 
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
       }
     }
   </style>
 </head>
+
 <body>
-  
+  <!-- Animated Poker Background -->
+  <div class="poker-bg">
+    <span></span><span></span><span></span><span></span>
+  </div>
+
   <div id="login-container">
+    <h1>Fantasy Leaderboard</h1>
     <input id="email" type="email" placeholder="Email" required />
     <input id="password" type="password" placeholder="Password" required />
     <button id="login-btn">Login</button>
