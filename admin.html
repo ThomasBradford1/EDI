@@ -139,7 +139,7 @@
 
   <script type="module">
     const weekSelect = document.getElementById('week');
-    const startDate = new Date('2025-07-03');
+    const startDate = new Date('2025-10-02');
     const numWeeks = 13;
     const today = new Date();
     let selectedIndex = 0;
@@ -167,7 +167,10 @@
     homeGameOption.textContent = "Home Game";
     weekSelect.appendChild(homeGameOption);
 
-    weekSelect.selectedIndex = selectedIndex;
+    const venueUpdate = document.createElement('option');
+    venueUpdate.value = "venue-total";
+    venueUpdate.textContent = "Venue Leaderboard Update";
+    weekSelect.appendChild(venueUpdate);
 
     weekSelect.selectedIndex = selectedIndex;
 
