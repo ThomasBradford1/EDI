@@ -88,21 +88,23 @@
     }
 
     /* --- Responsive adjustments --- */
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
+  @media (max-width: 768px) {
+  body {
+    flex-direction: column;
+    height: 100vh; /* force body to be exactly screen height */
+  }
 
-      #login-container, #image-side {
-        flex: none;
-        width: 100%;
-        height: 50vh;
-      }
+  #login-container, #image-side {
+    flex: 1; /* each takes half of the screen */
+    width: 100%;
+    height: auto; /* let flex control the height */
+  }
 
-      #login-container {
-        padding: 20px;
-      }
-    }
+  #login-container {
+    padding: 20px;
+  }
+}
+
   </style>
 </head>
 
