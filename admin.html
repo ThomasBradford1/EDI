@@ -1,231 +1,216 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Admin Score Submission</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-image: url('backgroundPIC.png');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-    }
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Score Submission</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("backgroundPIC.png");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+      }
 
-    .background-overlay {
-      background-color: rgba(255, 255, 255, 0.9);
-      padding: 30px;
-      max-width: 1200px;
-      margin: auto;
-      border-radius: 10px;
-    }
+      .background-overlay {
+        background-color: rgba(255, 255, 255, 0.9);
+        padding: 30px;
+        max-width: 1200px;
+        margin: auto;
+        border-radius: 10px;
+      }
 
-    h2, h3 {
-      margin-bottom: 20px;
-    }
+      .players-container {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+      }
 
-    label {
-      font-weight: bold;
-    }
+      .player-column {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        min-width: 220px;
+      }
 
-    .players-container {
-      display: flex;
-      gap: 20px;
-      overflow-x: auto;
-      flex-wrap: nowrap;
-    }
+      .player-column label {
+        display: block;
+        margin-top: 8px;
+      }
 
-    .player-column {
-      background: white;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      flex: 1;
-      min-width: 220px;
-    }
+      button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        cursor: pointer;
+      }
 
-    .player-column h3 {
-      text-align: center;
-      margin-bottom: 15px;
-    }
+      button:hover {
+        background-color: #388e3c;
+      }
 
-    .player-column label {
-      display: block;
-      margin-top: 10px;
-    }
+      .venue-rank-group {
+        display: flex;
+        gap: 20px;
+        margin-top: 20px;
+      }
 
-    input[type="number"], select {
-      width: 100%;
-      padding: 5px;
-      font-size: 1rem;
-    }
+      .venue-rank-group > div {
+        background: white;
+        padding: 10px;
+        border-radius: 8px;
+        min-width: 160px;
+      }
 
-    input[type="checkbox"] {
-      transform: scale(1.2);
-      margin-left: 5px;
-    }
+      a.button-link {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 10px 15px;
+        background-color: #4caf50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="background-overlay">
+      <h2>Submit Weekly Scores</h2>
 
-    button {
-      margin-top: 30px;
-      padding: 10px 20px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #388E3C;
-    }
-
-    .venue-rank-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 30px;
-      margin-top: 20px;
-    }
-
-    .venue-rank-group > div {
-      min-width: 160px;
-      background: #fff;
-      padding: 10px;
-      border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
-    }
-
-    .venue-rank-group label {
-      font-weight: normal;
-      display: block;
-      margin: 4px 0;
-    }
-
-    a.button-link {
-      display: inline-block;
-      margin-top: 20px;
-      padding: 10px 15px;
-      background-color: #4CAF50;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-    }
-  </style>
-</head>
-<body>
-  <div class="background-overlay">
-    <h2>Submit Weekly Scores</h2>
-
-    <form id="score-form">
-      <label for="week">Week:
-        <select id="week" name="week"></select>
-      </label><br><br>
-
-      <div class="players-container" id="players-area"></div>
-      <button id="save-draft-btn" type="button">Save Draft</button>
-      <button type="submit">Submit All Scores</button>
-    </form>
-
-    <h3>Venue Leaderboard (Select Weekly Rankings)</h3>
-    <form id="venue-form">
-      <div class="venue-rank-group" id="venue-rank-group"></div>
-      <button type="submit">Submit Venue Rankings</button>
-    </form>
-
-    <a class="button-link" href="leaderboard.html">View Leaderboard</a>
-  </div>
-
-  <script type="module">
-    const weekSelect = document.getElementById('week');
-    const startDate = new Date('2025-10-02');
-    const numWeeks = 13;
-    const today = new Date();
-    let selectedIndex = 0;
-
-    for (let i = 0; i < numWeeks; i++) {
-      const date = new Date(startDate);
-      date.setDate(startDate.getDate() + i * 7);
-
-      const option = document.createElement('option');
-      const displayDate = date.toLocaleDateString('en-AU');
-      const valueDate = date.toISOString().split('T')[0];
-
-      option.value = valueDate;
-      option.textContent = `Week ${i + 1} - ${displayDate}`;
-
-      const nextWeek = new Date(date);
-      nextWeek.setDate(date.getDate() + 7);
-      if (today >= date && today < nextWeek) selectedIndex = i;
-
-      weekSelect.appendChild(option);
-    }
-    
-    const homeGameOption = document.createElement('option');
-    homeGameOption.value = "home-game";
-    homeGameOption.textContent = "Home Game";
-    weekSelect.appendChild(homeGameOption);
-
-    const venueUpdate = document.createElement('option');
-    venueUpdate.value = "venue-total";
-    venueUpdate.textContent = "Venue Leaderboard Update";
-    weekSelect.appendChild(venueUpdate);
-
-    weekSelect.selectedIndex = selectedIndex;
-
-    const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
-    const container = document.getElementById('players-area');
-
-    players.forEach(player => {
-      const div = document.createElement('div');
-      div.className = 'player-column';
-
-      div.innerHTML = `
-        <h3>${player}</h3>
-
-        <label>Wild Scalps:
-          <input type="number" name="wildScalps[${player}]" min="0" value="0" />
+      <form id="score-form">
+        <label>
+          Week:
+          <select id="week" name="week"></select>
         </label>
 
-        <label>Head Hunter:
-          <input type="number" name="headHunter[${player}]" min="0" value="0" />
-        </label>
+        <div class="players-container" id="players-area"></div>
 
-        <label>Assassinated:
-          <input type="checkbox" name="assassinated[${player}]" />
-        </label>
+        <button type="button" id="save-draft-btn">Save Draft</button>
+        <button type="submit">Submit All Scores</button>
+      </form>
 
-        <label>Golden Snitch:
-          <input type="checkbox" name="goldenSnitch[${player}]" />
-        </label>
+      <h3>Venue Leaderboard</h3>
+      <form id="venue-form">
+        <div class="venue-rank-group" id="venue-rank-group"></div>
+        <button type="submit">Submit Venue Rankings</button>
+      </form>
 
-        <label>Final Table:
-          <input type="checkbox" name="finalTable[${player}]" />
-        </label>
+      <a class="button-link" href="leaderboard.html">View Leaderboard</a>
+    </div>
 
-        <label>Out Before Break:
-          <input type="checkbox" name="outBeforeBreak[${player}]" />
-        </label>
-      `;
+    <!-- Load players array and week dropdown -->
+    <script type="module">
+      document.addEventListener("DOMContentLoaded", () => {
+        // Players
+        window.players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
 
-      container.appendChild(div);
-    });
+        // Weeks + HomeGame + Leaderboard
+        const weeks = [
+          "2026-01-08",
+          "2026-01-15",
+          "2026-01-22",
+          "2026-01-29",
+          "2026-02-05",
+          "2026-02-12",
+          "2026-02-19",
+          "2026-02-26",
+          "2026-03-05",
+          "2026-03-12",
+          "2026-03-19",
+          "2026-03-26",
+          "HomeGame",
+          "Leaderboard",
+        ];
 
-    // Venue rank input generation
-    const venueGroup = document.getElementById('venue-rank-group');
-    for (let rank = 1; rank <= 5; rank++) {
-      const div = document.createElement('div');
-      div.innerHTML = `<strong>${rank} Place (${[4, 3, 2, 1, 0][rank - 1]} pts)</strong><br/>` +
-        players.map(player => `
-          <label>
-            <input type="checkbox" name="venueRank[${rank}][]" value="${player}"> ${player}
+        const weekSelect = document.getElementById("week");
+
+        weeks.forEach((d) => {
+          const option = document.createElement("option");
+          option.value = d;
+
+          if (d === "HomeGame") option.textContent = "Home Game";
+          else if (d === "Leaderboard")
+            option.textContent = "Leaderboard Update";
+          else
+            option.textContent = `Week - ${new Date(d).toLocaleDateString(
+              "en-AU"
+            )}`;
+
+          weekSelect.appendChild(option);
+        });
+
+        weekSelect.selectedIndex = 0;
+
+        // Generate player inputs
+        const container = document.getElementById("players-area");
+        window.players.forEach((player) => {
+          const div = document.createElement("div");
+          div.className = "player-column";
+
+          div.innerHTML = `
+          <h3>${player}</h3>
+
+          <label>Winning Game
+            <input type="checkbox" name="winningGame[${player}]">
           </label>
-        `).join('');
-      venueGroup.appendChild(div);
-    }
-  </script>
 
-  <script type="module" src="admin.js"></script>
-</body>
+          <label>Final Table
+            <input type="checkbox" name="finalTable[${player}]">
+          </label>
+
+          <label>Wild Scalps
+            <input type="number" name="wildScalps[${player}]" min="0" value="0">
+          </label>
+
+          <label>Head Hunter
+            <input type="number" name="headHunter[${player}]" min="0" value="0">
+          </label>
+
+          <label>Golden Snitch
+            <input type="checkbox" name="goldenSnitch[${player}]">
+          </label>
+
+          <label>Snitch Elimination
+            <input type="checkbox" name="snitchElim[${player}]">
+          </label>
+
+          <label>Assassinated
+            <input type="checkbox" name="assassinated[${player}]">
+          </label>
+        `;
+          container.appendChild(div);
+        });
+
+        // Generate venue rank inputs
+        const venueGroup = document.getElementById("venue-rank-group");
+        const points = [5, 4, 3, -1, -2];
+
+        for (let rank = 1; rank <= 5; rank++) {
+          const div = document.createElement("div");
+          div.innerHTML =
+            `<strong>${rank} Place (${points[rank - 1]} pts)</strong><br>` +
+            window.players
+              .map(
+                (p) => `
+            <label>
+              <input type="checkbox" name="venueRank[${rank}][]" value="${p}">
+              ${p}
+            </label>`
+              )
+              .join("");
+          venueGroup.appendChild(div);
+        }
+      });
+    </script>
+
+    <!-- Admin.js logic -->
+    <script type="module" src="admin.js"></script>
+  </body>
 </html>

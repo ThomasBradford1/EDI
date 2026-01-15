@@ -1,254 +1,272 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Fantasy Leaderboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-image: url('lol.png');
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: right bottom;
-  background-attachment: fixed;
-}
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fantasy Leaderboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-image: url("lol.png");
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: right bottom;
+        background-attachment: fixed;
+      }
 
-@media (max-width: 600px) {
-  body {
-    background-size: 170%;
-    background-position: calc(100% - 30px) calc(100% - 300px);
-  }
-}
+      @media (max-width: 600px) {
+        body {
+          background-size: 170%;
+          background-position: calc(100% - 30px) calc(100% - 300px);
+        }
+      }
 
-    .overlay {
-      background-color: rgba(255, 255, 255, 0.85);
-      padding: 20px;
-      max-width: 1200px;
-      margin: auto;
-      border-radius: 10px;
-    }
+      .overlay {
+        background-color: rgba(255, 255, 255, 0.85);
+        padding: 20px;
+        max-width: 1200px;
+        margin: auto;
+        border-radius: 10px;
+      }
 
-    h1 {
-      font-size: 1.5rem;
-      text-align: center;
-      margin-bottom: 20px;
-    }
+      h1 {
+        font-size: 1.5rem;
+        text-align: center;
+        margin-bottom: 20px;
+      }
 
-    .table-wrapper {
-      overflow-x: auto;
-      width: 100%;
-    }
+      .table-wrapper {
+        overflow-x: auto;
+        width: 100%;
+      }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+      }
 
-    thead tr {
-      background-color: #4caf50;
-      color: white;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
+      thead tr {
+        background-color: #4caf50;
+        color: white;
+        font-weight: 600;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+      }
 
-    th, td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #c6e0b4;
-      text-align: center;
-      white-space: nowrap;
-    }
+      th,
+      td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #c6e0b4;
+        text-align: center;
+        white-space: nowrap;
+      }
 
-    th:nth-child(1), td:nth-child(1),
-    th:nth-child(2), td:nth-child(2),
-    th:nth-child(3), td:nth-child(3) {
-      font-weight: 700;
-      color: #2e7d32;
-    }
+      th:nth-child(1),
+      td:nth-child(1),
+      th:nth-child(2),
+      td:nth-child(2),
+      th:nth-child(3),
+      td:nth-child(3) {
+        font-weight: 700;
+        color: #2e7d32;
+      }
 
-    th:nth-child(n+4), td:nth-child(n+4) {
-      font-size: 0.85rem;
-      color: #555;
-    }
+      th:nth-child(n + 4),
+      td:nth-child(n + 4) {
+        font-size: 0.85rem;
+        color: #555;
+      }
 
-    a.button {
-      display: inline-block;
-      margin: 10px 5px;
-      padding: 10px 15px;
-      background-color: #4CAF50;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 1rem;
-    }
+      a.button {
+        display: inline-block;
+        margin: 10px 5px;
+        padding: 10px 15px;
+        background-color: #4caf50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+        font-size: 1rem;
+      }
 
-    a#adminButton {
-      background-color: #444;
-    }
+      a#adminButton {
+        background-color: #444;
+      }
 
-    #logout-btn {
-      margin-top: 20px;
-      padding: 8px 15px;
-      background-color: #e53935;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="overlay">
-    <h1>EDI WOULD GO</h1>
+      #logout-btn {
+        margin-top: 20px;
+        padding: 8px 15px;
+        background-color: #e53935;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overlay">
+      <h1>EDI WOULD GO</h1>
 
-    <a class="button" href="weekscores.html">View Weekly Scores</a>
-    <a id="adminButton" class="button" href="admin.html" style="display: none;">Admin Panel</a>
+      <a class="button" href="weekscores.html">View Weekly Scores</a>
+      <a id="adminButton" class="button" href="admin.html" style="display: none"
+        >Admin Panel</a
+      >
 
-    <div class="table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>Rank</th>
-            <th>Player</th>
-            <th>Points</th>
-            <th>Wild Scalps</th>
-            <th>Head Hunter</th>
-            <th>Venue Pos (latest)</th>
-            <th>Assassinated</th>
-            <th>Golden Snitch</th>
-            <th>Final Table</th>
-            <th>Out Before Break</th>
-          </tr>
-        </thead>
-        <tbody id="leaderboard-body">
-          <tr><td colspan="10">Loading leaderboard...</td></tr>
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Points</th>
+              <th>Wild Scalps</th>
+              <th>Head Hunter</th>
+              <th>Winning Game</th>
+              <th>Venue Pos (latest)</th>
+              <th>Assassinated</th>
+              <th>Golden Snitch</th>
+              <th>Snitch Elim</th>
+              <th>Final Table</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboard-body">
+            <tr>
+              <td colspan="11">Loading leaderboard...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button id="logout-btn">Logout</button>
     </div>
 
-    <button id="logout-btn">Logout</button>
-  </div>
+    <script type="module">
+      import { db } from "./firebaseConfig.js";
+      import {
+        collection,
+        query,
+        where,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
 
-  <script type="module">
-  import { db } from './firebaseConfig.js';
-  import {
-    collection,
-    query,
-    where,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+      async function loadLeaderboard() {
+        if (localStorage.getItem("isAdmin") === "true") {
+          document.getElementById("adminButton").style.display = "inline-block";
+        }
 
-  async function loadLeaderboard() {
-    if (localStorage.getItem("isAdmin") === "true") {
-      document.getElementById("adminButton").style.display = "inline-block";
-    }
+        const tbody = document.getElementById("leaderboard-body");
+        tbody.innerHTML = "";
 
-    const tbody = document.getElementById('leaderboard-body');
-    tbody.innerHTML = '';
+        const scoresQuery = query(
+          collection(db, "scores"),
+          where("submitted", "==", true)
+        );
+        const scoresSnapshot = await getDocs(scoresQuery);
+        const venueSnapshot = await getDocs(collection(db, "venueTotals"));
 
-    // Query only submitted scores (ignore drafts)
-    const scoresQuery = query(collection(db, "scores"), where("submitted", "==", true));
-    const scoresSnapshot = await getDocs(scoresQuery);
+        if (scoresSnapshot.empty && venueSnapshot.empty) {
+          tbody.innerHTML = '<tr><td colspan="11">No scores found</td></tr>';
+          return;
+        }
 
-    const venueSnapshot = await getDocs(collection(db, "venueTotals"));
+        const playerStats = {};
 
-    if (scoresSnapshot.empty && venueSnapshot.empty) {
-      tbody.innerHTML = '<tr><td colspan="10">No scores found</td></tr>';
-      return;
-    }
+        // Process scores
+        scoresSnapshot.forEach((doc) => {
+          const data = doc.data();
+          const player = data.player || "Unknown";
 
-    const playerStats = {};
+          if (!playerStats[player]) {
+            playerStats[player] = {
+              totalPoints: 0,
+              wildScalps: 0,
+              headHunter: 0,
+              winningGame: 0,
+              assassinated: 0,
+              goldenSnitch: 0,
+              snitchElim: 0,
+              finalTable: 0,
+              latestVenuePosition: "-",
+            };
+          }
 
-    // Process scores collection
-    scoresSnapshot.forEach(doc => {
-      const data = doc.data();
-      const player = data.player || 'Unknown';
+          playerStats[player].wildScalps += parseInt(data.wildScalps) || 0;
+          playerStats[player].headHunter += parseInt(data.headHunter) || 0;
+          playerStats[player].winningGame += data.winningGame ? 1 : 0;
+          playerStats[player].assassinated += data.assassinated ? 1 : 0;
+          playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
+          playerStats[player].snitchElim += data.snitchElim ? 1 : 0;
+          playerStats[player].finalTable += data.finalTable ? 1 : 0;
 
-      if (!playerStats[player]) {
-        playerStats[player] = {
-          totalPoints: 0,
-          wildScalps: 0,
-          headHunter: 0,
-          assassinated: 0,
-          goldenSnitch: 0,
-          finalTable: 0,
-          outBeforeBreak: 0,
-          latestVenuePosition: '-',  // Will be updated later
-        };
+          playerStats[player].totalPoints += calculatePoints(data);
+        });
+
+        // Merge in venue totals
+        venueSnapshot.forEach((doc) => {
+          const data = doc.data();
+          const player = data.player;
+
+          if (!playerStats[player]) {
+            playerStats[player] = {
+              totalPoints: 0,
+              wildScalps: 0,
+              headHunter: 0,
+              winningGame: 0,
+              assassinated: 0,
+              goldenSnitch: 0,
+              snitchElim: 0,
+              finalTable: 0,
+              latestVenuePosition: "-",
+            };
+          }
+
+          playerStats[player].totalPoints += parseInt(data.total) || 0;
+          if (data.latestVenueRank !== undefined) {
+            playerStats[player].latestVenuePosition = data.latestVenueRank;
+          }
+        });
+
+        const sortedPlayers = Object.entries(playerStats).sort(
+          ([, a], [, b]) => b.totalPoints - a.totalPoints
+        );
+
+        let rank = 1;
+        for (const [player, stats] of sortedPlayers) {
+          tbody.innerHTML += `
+          <tr>
+            <td>${rank++}</td>
+            <td>${player}</td>
+            <td>${stats.totalPoints}</td>
+            <td>${stats.wildScalps}</td>
+            <td>${stats.headHunter}</td>
+            <td>${stats.winningGame}</td>
+            <td>${stats.latestVenuePosition}</td>
+            <td>${stats.assassinated}</td>
+            <td>${stats.goldenSnitch}</td>
+            <td>${stats.snitchElim}</td>
+            <td>${stats.finalTable}</td>
+          </tr>
+        `;
+        }
       }
 
-      playerStats[player].wildScalps += data.wildScalps || 0;
-      playerStats[player].headHunter += data.headHunter || 0;
-      playerStats[player].assassinated += data.assassinated ? 1 : 0;
-      playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
-      playerStats[player].finalTable += data.finalTable ? 1 : 0;
-      playerStats[player].outBeforeBreak += data.outBeforeBreak ? 1 : 0;
-
-      playerStats[player].totalPoints += calculatePoints(data);
-    });
-
-    // Merge in points and venue rank from venueTotals
-    venueSnapshot.forEach(doc => {
-      const data = doc.data();
-      const player = data.player;
-
-      if (!playerStats[player]) {
-        playerStats[player] = {
-          totalPoints: 0,
-          wildScalps: 0,
-          headHunter: 0,
-          assassinated: 0,
-          goldenSnitch: 0,
-          finalTable: 0,
-          outBeforeBreak: 0,
-          latestVenuePosition: '-'
-        };
+      function calculatePoints(data) {
+        let points = 0;
+        points += data.finalTable ? 3 : 0;
+        points += data.winningGame ? 5 : 0;
+        points += parseInt(data.wildScalps) || 0;
+        points += parseInt(data.headHunter) || 0;
+        points += data.assassinated ? -1 : 0;
+        points += data.goldenSnitch ? 2 : 0;
+        points += data.snitchElim ? -2 : 0;
+        return points;
       }
 
-      playerStats[player].totalPoints += parseInt(data.total) || 0;
-
-      if (data.latestVenueRank !== undefined) {
-        playerStats[player].latestVenuePosition = data.latestVenueRank;
-      }
-    });
-
-    const sortedPlayers = Object.entries(playerStats)
-      .sort(([, a], [, b]) => b.totalPoints - a.totalPoints);
-
-    let rank = 1;
-    for (const [player, stats] of sortedPlayers) {
-      tbody.innerHTML += `
-        <tr>
-          <td>${rank++}</td>
-          <td>${player}</td>
-          <td>${stats.totalPoints}</td>
-          <td>${stats.wildScalps}</td>
-          <td>${stats.headHunter}</td>
-          <td>${stats.latestVenuePosition}</td>
-          <td>${stats.assassinated}</td>
-          <td>${stats.goldenSnitch}</td>
-          <td>${stats.finalTable}</td>
-          <td>${stats.outBeforeBreak}</td>
-        </tr>
-      `;
-    }
-  }
-
-  function calculatePoints(data) {
-    let points = 0;
-    points += parseInt(data.wildScalps) || 0;
-    points += parseInt(data.headHunter) || 0;
-    points += data.assassinated ? -1 : 0;
-    points += data.goldenSnitch ? 1 : 0;
-    points += data.finalTable ? 1 : 0;
-    points += data.outBeforeBreak ? -1 : 0;
-    return points;
-  }
-
-  loadLeaderboard();
-</script>
+      loadLeaderboard();
+    </script>
+  </body>
+</html>
