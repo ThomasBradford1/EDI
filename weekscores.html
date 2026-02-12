@@ -37,8 +37,6 @@
       border-bottom: 1px solid #c6e0b4;
       text-align: center;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
     th:nth-child(1), td:nth-child(1) {
@@ -59,27 +57,18 @@
 
     th:nth-child(n+3), td:nth-child(n+3) {
       min-width: 60px;
-      font-weight: 400;
       font-size: 0.85rem;
       color: #555;
     }
 
     @media (max-width: 700px) {
-      .table-container {
-        -webkit-overflow-scrolling: touch;
-      }
-
       table {
         min-width: 900px;
-      }
-
-      th, td {
-        font-size: 0.85rem;
-        padding: 6px 8px;
       }
     }
   </style>
 </head>
+
 <body>
   <h1>Previous Week Scores</h1>
 
@@ -89,22 +78,23 @@
   </select>
 
   <div class="table-container">
-    <table id="week-table">
+    <table>
       <thead>
         <tr>
           <th>Player</th>
           <th>Total Points</th>
           <th>Wild Scalps</th>
           <th>Head Hunter</th>
+          <th>Winning Game</th>
           <th>Venue Position</th>
           <th>Assassinated</th>
           <th>Golden Snitch</th>
+          <th>Snitch Elim</th>
           <th>Final Table</th>
-          <th>Out Before Break</th>
         </tr>
       </thead>
       <tbody id="week-body">
-        <tr><td colspan="9">Select a week to view scores.</td></tr>
+        <tr><td colspan="10">Select a week to view scores.</td></tr>
       </tbody>
     </table>
   </div>
@@ -117,8 +107,7 @@
     color: white;
     text-decoration: none;
     border-radius: 5px;
-    font-weight: bold;
-  ">
+    font-weight: bold;">
     ← Back to Leaderboard
   </a>
 
@@ -129,12 +118,11 @@
     color: white;
     border: none;
     border-radius: 4px;
-    cursor: pointer;
-  ">
+    cursor: pointer;">
     Logout
   </button>
 
-  <!-- Firebase SDK and Scripts -->
+  <!-- Firebase -->
   <script type="module">
     import { db } from './firebaseConfig.js';
     import {
@@ -150,11 +138,10 @@
     async function loadWeeks() {
       const snapshot = await getDocs(collection(db, "scores"));
       const weeks = new Set();
+
       snapshot.forEach(doc => {
         const data = doc.data();
-        if (data.week) {
-          weeks.add(data.week);
-        }
+        if (data.week) weeks.add(data.week);
       });
 
       Array.from(weeks).sort().forEach(week => {
@@ -173,25 +160,41 @@
       const snapshot = await getDocs(q);
 
       if (snapshot.empty) {
-        weekBody.innerHTML = "<tr><td colspan='9'>No scores found for that week.</td></tr>";
+        weekBody.innerHTML = "<tr><td colspan='10'>No scores found.</td></tr>";
         return;
       }
 
-      weekBody.innerHTML = "";
+      const players = [];
+
       snapshot.forEach(doc => {
         const data = doc.data();
         const points = calculatePoints(data);
+
+        players.push({
+          player: data.player,
+          points,
+          ...data
+        });
+      });
+
+      // SORT BY POINTS DESC (nice improvement)
+      players.sort((a, b) => b.points - a.points);
+
+      weekBody.innerHTML = "";
+
+      players.forEach(p => {
         weekBody.innerHTML += `
           <tr>
-            <td>${data.player}</td>
-            <td>${points}</td>
-            <td>${data.wildScalps || 0}</td>
-            <td>${data.headHunter || 0}</td>
-            <td>${data.venuePosition || '-'}</td>
-            <td>${data.assassinated ? 1 : 0}</td>
-            <td>${data.goldenSnitch ? 1 : 0}</td>
-            <td>${data.finalTable ? 1 : 0}</td>
-            <td>${data.outBeforeBreak ? 1 : 0}</td>
+            <td>${p.player}</td>
+            <td>${p.points}</td>
+            <td>${p.wildScalps || 0}</td>
+            <td>${p.headHunter || 0}</td>
+            <td>${p.winningGame ? 1 : 0}</td>
+            <td>${p.venuePosition || '-'}</td>
+            <td>${p.assassinated ? 1 : 0}</td>
+            <td>${p.goldenSnitch ? 1 : 0}</td>
+            <td>${p.snitchElim ? 1 : 0}</td>
+            <td>${p.finalTable ? 1 : 0}</td>
           </tr>
         `;
       });
@@ -199,30 +202,31 @@
 
     function calculatePoints(data) {
       let points = 0;
-      points += (data.wildScalps || 0);
-      points += (data.headHunter || 0);
+
+      points += data.finalTable ? 3 : 0;
+      points += data.winningGame ? 5 : 0;
+      points += parseInt(data.wildScalps) || 0;
+      points += parseInt(data.headHunter) || 0;
       points += data.assassinated ? -1 : 0;
-      points += data.goldenSnitch ? 1 : 0;
-      points += data.finalTable ? 1 : 0;
-      points += data.outBeforeBreak ? -1 : 0;
+      points += data.goldenSnitch ? 2 : 0;
+      points += data.snitchElim ? -2 : 0;
+
       return points;
     }
 
     loadWeeks();
   </script>
 
+  <!-- Logout -->
   <script type="module">
     import { auth } from './firebaseConfig.js';
     import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
 
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        await signOut(auth);
-        localStorage.removeItem("isAdmin");
-        window.location.href = 'index.html';
-      });
-    }
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await signOut(auth);
+      localStorage.removeItem("isAdmin");
+      window.location.href = 'index.html';
+    });
   </script>
 </body>
 </html>
