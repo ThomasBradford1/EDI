@@ -106,167 +106,106 @@
         cursor: pointer;
       }
     </style>
-  </head>
-  <body>
-    <div class="overlay">
-      <h1>EDI WOULD GO</h1>
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard - Jordoncup</title>
+<style>
+  body { font-family: Arial; background:#f0f0f0; padding:20px; }
+  table { border-collapse: collapse; width: 100%; background:white; border-radius:10px; overflow:hidden; }
+  th, td { padding:8px 12px; border:1px solid #ccc; text-align:center; }
+  th { background:#4caf50; color:white; }
+  h2 { text-align:center; }
+</style>
+</head>
+<body>
+<h2>Jordoncup Leaderboard</h2>
+<table id="leaderboard-table">
+  <thead>
+    <tr>
+      <th>Player</th>
+      <th>Wild Scalps</th>
+      <th>Head Hunter</th>
+      <th>Eliminated</th>
+      <th>Golden Snitch</th>
+      <th>Snitch Elimination</th>
+      <th>Snitch Holder Bounty</th>
+      <th>Final Position</th>
+      <th>Rebuy</th>
+      <th>Saved By Break</th>
+      <th>Fish 7-2 Bounty</th>
+      <th>Fish 7-2 KO</th>
+      <th>Death by Quads</th>
+      <th>Total Points</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-      <a class="button" href="weekscores.html">View Weekly Scores</a>
-      <a id="adminButton" class="button" href="admin.html" style="display: none"
-        >Admin Panel</a
-      >
+<script type="module">
+import { db } from './firebaseConfig.js';
+import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Points</th>
-              <th>Wild Scalps</th>
-              <th>Head Hunter</th>
-              <th>Winning Game</th>
-              <th>Venue Pos (latest)</th>
-              <th>Assassinated</th>
-              <th>Golden Snitch</th>
-              <th>Snitch Elim</th>
-              <th>Final Table</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboard-body">
-            <tr>
-              <td colspan="11">Loading leaderboard...</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+const tableBody = document.querySelector('#leaderboard-table tbody');
+const players = ["Micheal","Tom","Luke","Jeff","Jordan"];
+const finalPoints = [50,40,30,20,10];
 
-      <button id="logout-btn">Logout</button>
-    </div>
+async function loadLeaderboard() {
+  const scoresSnap = await getDocs(collection(db, 'scores'));
+  const scores = {};
+  scoresSnap.forEach(doc => {
+    const data = doc.data();
+    if(!scores[data.player]) scores[data.player]=[];
+    scores[data.player].push(data);
+  });
 
-    <script type="module">
-      import { db } from "./firebaseConfig.js";
-      import {
-        collection,
-        query,
-        where,
-        getDocs,
-      } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+  const leaderboard = players.map(player=>{
+    const playerScores = scores[player]||[];
+    const totals = {
+      wildScalps:0, headHunter:0, eliminated:0,
+      goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
+      finalPosition:0, rebuy:0, savedByBreak:0,
+      fishBounty72:0, fishKO72:0, deathByQuads:0,
+      totalPoints:0
+    };
+    playerScores.forEach(s=>{
+      totals.wildScalps += s.wildScalps*5;
+      totals.headHunter += s.headHunter*10;
+      totals.eliminated += s.eliminated*-10;
+      totals.goldenSnitch += s.goldenSnitch*10;
+      totals.snitchElim += s.snitchElim*-25;
+      totals.snitchHolderBounty += s.snitchHolderBounty*5;
+      if(s.finalPosition) totals.finalPosition += finalPoints[s.finalPosition-1];
+      totals.rebuy += s.rebuy?0:0;
+      totals.savedByBreak += s.savedByBreak?10:0;
+      totals.fishBounty72 += s.fishBounty72*72;
+      totals.fishKO72 += s.fishKO72*36;
+      totals.deathByQuads += s.deathByQuads*40;
+      totals.totalPoints = totals.wildScalps+totals.headHunter+totals.eliminated+totals.goldenSnitch+totals.snitchElim+totals.snitchHolderBounty+totals.finalPosition+totals.savedByBreak+totals.fishBounty72+totals.fishKO72+totals.deathByQuads;
+    });
+    return { player, ...totals };
+  });
 
-      async function loadLeaderboard() {
-        if (localStorage.getItem("isAdmin") === "true") {
-          document.getElementById("adminButton").style.display = "inline-block";
-        }
+  tableBody.innerHTML = leaderboard.map(l=>`
+    <tr>
+      <td>${l.player}</td>
+      <td>${l.wildScalps}</td>
+      <td>${l.headHunter}</td>
+      <td>${l.eliminated}</td>
+      <td>${l.goldenSnitch}</td>
+      <td>${l.snitchElim}</td>
+      <td>${l.snitchHolderBounty}</td>
+      <td>${l.finalPosition}</td>
+      <td>${l.rebuy}</td>
+      <td>${l.savedByBreak}</td>
+      <td>${l.fishBounty72}</td>
+      <td>${l.fishKO72}</td>
+      <td>${l.deathByQuads}</td>
+      <td>${l.totalPoints}</td>
+    </tr>
+  `).join('');
+}
 
-        const tbody = document.getElementById("leaderboard-body");
-        tbody.innerHTML = "";
-
-        const scoresQuery = query(
-          collection(db, "scores"),
-          where("submitted", "==", true)
-        );
-        const scoresSnapshot = await getDocs(scoresQuery);
-        const venueSnapshot = await getDocs(collection(db, "venueTotals"));
-
-        if (scoresSnapshot.empty && venueSnapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="11">No scores found</td></tr>';
-          return;
-        }
-
-        const playerStats = {};
-
-        // Process scores
-        scoresSnapshot.forEach((doc) => {
-          const data = doc.data();
-          const player = data.player || "Unknown";
-
-          if (!playerStats[player]) {
-            playerStats[player] = {
-              totalPoints: 0,
-              wildScalps: 0,
-              headHunter: 0,
-              winningGame: 0,
-              assassinated: 0,
-              goldenSnitch: 0,
-              snitchElim: 0,
-              finalTable: 0,
-              latestVenuePosition: "-",
-            };
-          }
-
-          playerStats[player].wildScalps += parseInt(data.wildScalps) || 0;
-          playerStats[player].headHunter += parseInt(data.headHunter) || 0;
-          playerStats[player].winningGame += data.winningGame ? 1 : 0;
-          playerStats[player].assassinated += data.assassinated ? 1 : 0;
-          playerStats[player].goldenSnitch += data.goldenSnitch ? 1 : 0;
-          playerStats[player].snitchElim += data.snitchElim ? 1 : 0;
-          playerStats[player].finalTable += data.finalTable ? 1 : 0;
-
-          playerStats[player].totalPoints += calculatePoints(data);
-        });
-
-        // Merge in venue totals
-        venueSnapshot.forEach((doc) => {
-          const data = doc.data();
-          const player = data.player;
-
-          if (!playerStats[player]) {
-            playerStats[player] = {
-              totalPoints: 0,
-              wildScalps: 0,
-              headHunter: 0,
-              winningGame: 0,
-              assassinated: 0,
-              goldenSnitch: 0,
-              snitchElim: 0,
-              finalTable: 0,
-              latestVenuePosition: "-",
-            };
-          }
-
-          playerStats[player].totalPoints += parseInt(data.total) || 0;
-          if (data.latestVenueRank !== undefined) {
-            playerStats[player].latestVenuePosition = data.latestVenueRank;
-          }
-        });
-
-        const sortedPlayers = Object.entries(playerStats).sort(
-          ([, a], [, b]) => b.totalPoints - a.totalPoints
-        );
-
-        let rank = 1;
-        for (const [player, stats] of sortedPlayers) {
-          tbody.innerHTML += `
-          <tr>
-            <td>${rank++}</td>
-            <td>${player}</td>
-            <td>${stats.totalPoints}</td>
-            <td>${stats.wildScalps}</td>
-            <td>${stats.headHunter}</td>
-            <td>${stats.winningGame}</td>
-            <td>${stats.latestVenuePosition}</td>
-            <td>${stats.assassinated}</td>
-            <td>${stats.goldenSnitch}</td>
-            <td>${stats.snitchElim}</td>
-            <td>${stats.finalTable}</td>
-          </tr>
-        `;
-        }
-      }
-
-      function calculatePoints(data) {
-        let points = 0;
-        points += data.finalTable ? 3 : 0;
-        points += data.winningGame ? 5 : 0;
-        points += parseInt(data.wildScalps) || 0;
-        points += parseInt(data.headHunter) || 0;
-        points += data.assassinated ? -1 : 0;
-        points += data.goldenSnitch ? 2 : 0;
-        points += data.snitchElim ? -2 : 0;
-        return points;
-      }
-
-      loadLeaderboard();
-    </script>
-  </body>
+loadLeaderboard();
+</script>
+</body>
 </html>

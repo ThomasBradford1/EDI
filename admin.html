@@ -1,216 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Admin Score Submission</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-image: url("backgroundPIC.png");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Score Submission</title>
+  <style>
+    body { font-family: Arial; margin:0; padding:0; background:#f0f0f0; }
+    .background-overlay { background-color: rgba(255,255,255,0.92); padding:30px; max-width:1400px; margin:auto; border-radius:10px; }
+    .players-container { display:flex; gap:20px; overflow-x:auto; }
+    .player-column { background:white; padding:15px; border-radius:8px; min-width:260px; }
+    .player-column label { display:block; margin-top:6px; font-size:0.9rem; }
+    select, input[type="number"] { width:100%; padding:4px; margin-top:3px; }
+    button { margin-top:20px; padding:10px 20px; background-color:#4caf50; color:white; border:none; border-radius:5px; font-size:1rem; cursor:pointer; }
+    button:hover { background-color:#388e3c; }
+    a.button-link { display:inline-block; margin-top:20px; padding:10px 15px; background-color:#4caf50; color:white; text-decoration:none; border-radius:5px; }
+  </style>
+</head>
+<body>
+  <div class="background-overlay">
+    <h2>Submit Weekly Scores - Jordoncup</h2>
 
-      .background-overlay {
-        background-color: rgba(255, 255, 255, 0.9);
-        padding: 30px;
-        max-width: 1200px;
-        margin: auto;
-        border-radius: 10px;
-      }
+    <form id="score-form">
+      <label>Week:
+        <select id="week" name="week"></select>
+      </label>
 
-      .players-container {
-        display: flex;
-        gap: 20px;
-        overflow-x: auto;
-      }
+      <div class="players-container" id="players-area"></div>
 
-      .player-column {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        min-width: 220px;
-      }
+      <button type="button" id="save-draft-btn">Save Draft</button>
+      <button type="submit">Submit All Scores</button>
+    </form>
 
-      .player-column label {
-        display: block;
-        margin-top: 8px;
-      }
+    <a class="button-link" href="leaderboard.html">View Leaderboard</a>
+  </div>
 
-      button {
-        margin-top: 20px;
-        padding: 10px 20px;
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 1rem;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background-color: #388e3c;
-      }
-
-      .venue-rank-group {
-        display: flex;
-        gap: 20px;
-        margin-top: 20px;
-      }
-
-      .venue-rank-group > div {
-        background: white;
-        padding: 10px;
-        border-radius: 8px;
-        min-width: 160px;
-      }
-
-      a.button-link {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 10px 15px;
-        background-color: #4caf50;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="background-overlay">
-      <h2>Submit Weekly Scores</h2>
-
-      <form id="score-form">
-        <label>
-          Week:
-          <select id="week" name="week"></select>
-        </label>
-
-        <div class="players-container" id="players-area"></div>
-
-        <button type="button" id="save-draft-btn">Save Draft</button>
-        <button type="submit">Submit All Scores</button>
-      </form>
-
-      <h3>Venue Leaderboard</h3>
-      <form id="venue-form">
-        <div class="venue-rank-group" id="venue-rank-group"></div>
-        <button type="submit">Submit Venue Rankings</button>
-      </form>
-
-      <a class="button-link" href="leaderboard.html">View Leaderboard</a>
-    </div>
-
-    <!-- Load players array and week dropdown -->
-    <script type="module">
-      document.addEventListener("DOMContentLoaded", () => {
-        // Players
-        window.players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
-
-        // Weeks + HomeGame + Leaderboard
-        const weeks = [
-          "2026-01-08",
-          "2026-01-15",
-          "2026-01-22",
-          "2026-01-29",
-          "2026-02-05",
-          "2026-02-12",
-          "2026-02-19",
-          "2026-02-26",
-          "2026-03-05",
-          "2026-03-12",
-          "2026-03-19",
-          "2026-03-26",
-          "HomeGame",
-          "Leaderboard",
-        ];
-
-        const weekSelect = document.getElementById("week");
-
-        weeks.forEach((d) => {
-          const option = document.createElement("option");
-          option.value = d;
-
-          if (d === "HomeGame") option.textContent = "Home Game";
-          else if (d === "Leaderboard")
-            option.textContent = "Leaderboard Update";
-          else
-            option.textContent = `Week - ${new Date(d).toLocaleDateString(
-              "en-AU"
-            )}`;
-
-          weekSelect.appendChild(option);
-        });
-
-        weekSelect.selectedIndex = 0;
-
-        // Generate player inputs
-        const container = document.getElementById("players-area");
-        window.players.forEach((player) => {
-          const div = document.createElement("div");
-          div.className = "player-column";
-
-          div.innerHTML = `
-          <h3>${player}</h3>
-
-          <label>Winning Game
-            <input type="checkbox" name="winningGame[${player}]">
-          </label>
-
-          <label>Final Table
-            <input type="checkbox" name="finalTable[${player}]">
-          </label>
-
-          <label>Wild Scalps
-            <input type="number" name="wildScalps[${player}]" min="0" value="0">
-          </label>
-
-          <label>Head Hunter
-            <input type="number" name="headHunter[${player}]" min="0" value="0">
-          </label>
-
-          <label>Golden Snitch
-            <input type="checkbox" name="goldenSnitch[${player}]">
-          </label>
-
-          <label>Snitch Elimination
-            <input type="checkbox" name="snitchElim[${player}]">
-          </label>
-
-          <label>Assassinated
-            <input type="checkbox" name="assassinated[${player}]">
-          </label>
-        `;
-          container.appendChild(div);
-        });
-
-        // Generate venue rank inputs
-        const venueGroup = document.getElementById("venue-rank-group");
-        const points = [5, 4, 3, -1, -2];
-
-        for (let rank = 1; rank <= 5; rank++) {
-          const div = document.createElement("div");
-          div.innerHTML =
-            `<strong>${rank} Place (${points[rank - 1]} pts)</strong><br>` +
-            window.players
-              .map(
-                (p) => `
-            <label>
-              <input type="checkbox" name="venueRank[${rank}][]" value="${p}">
-              ${p}
-            </label>`
-              )
-              .join("");
-          venueGroup.appendChild(div);
-        }
+  <script type="module">
+    document.addEventListener("DOMContentLoaded", () => {
+      window.players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
+      const weeks = ["2026-01-08","2026-01-15","2026-01-22","2026-01-29","2026-02-05","2026-02-12","2026-02-19","2026-02-26","2026-03-05","2026-03-12","2026-03-19","2026-03-26","HomeGame","Leaderboard"];
+      const weekSelect = document.getElementById("week");
+      weeks.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value=d;
+        if(d==="HomeGame") opt.textContent="Home Game";
+        else if(d==="Leaderboard") opt.textContent="Leaderboard Update";
+        else opt.textContent=`Week - ${new Date(d).toLocaleDateString("en-AU")}`;
+        weekSelect.appendChild(opt);
       });
-    </script>
+      weekSelect.selectedIndex=0;
 
-    <!-- Admin.js logic -->
-    <script type="module" src="admin.js"></script>
-  </body>
+      const container = document.getElementById("players-area");
+      window.players.forEach(player=>{
+        const div = document.createElement("div");
+        div.className="player-column";
+        div.innerHTML=`
+          <h3>${player}</h3>
+          <label>Wild Scalps (+5 each)<input type="number" name="wildScalps[${player}]" min="0" value="0"></label>
+          <label>Head Hunter (+10 each)<input type="number" name="headHunter[${player}]" min="0" value="0"></label>
+          <label>Eliminated (-10 each)<input type="number" name="eliminated[${player}]" min="0" value="0"></label>
+          <hr>
+          <label>Golden Snitch (+10 each)<input type="number" name="goldenSnitch[${player}]" min="0" value="0"></label>
+          <label>Snitch Elimination (-25 each)<input type="number" name="snitchElim[${player}]" min="0" value="0"></label>
+          <label>Snitch Holder Bounty (+5 each)<input type="number" name="snitchHolderBounty[${player}]" min="0" value="0"></label>
+          <hr>
+          <label>Final Position
+            <select name="finalPosition[${player}]">
+              <option value="">--</option>
+              <option value="1">1st (+50)</option>
+              <option value="2">2nd (+40)</option>
+              <option value="3">3rd (+30)</option>
+              <option value="4">4th (+20)</option>
+              <option value="5">5th (+10)</option>
+            </select>
+          </label>
+          <hr>
+          <label><input type="checkbox" name="rebuy[${player}]"> Rebuy</label>
+          <label><input type="checkbox" name="savedByBreak[${player}]"> Saved By Break (+10 if no rebuy)</label>
+          <hr>
+          <label>Fish 7-2 Bounty (+72 each)<input type="number" name="fishBounty72[${player}]" min="0" value="0"></label>
+          <label>Fish 7-2 KO (+36 each)<input type="number" name="fishKO72[${player}]" min="0" value="0"></label>
+          <label>Death by Quads / Straight Flush (+40 each)<input type="number" name="deathByQuads[${player}]" min="0" value="0"></label>
+        `;
+        container.appendChild(div);
+      });
+    });
+  </script>
+
+  <script type="module" src="admin.js"></script>
+</body>
 </html>

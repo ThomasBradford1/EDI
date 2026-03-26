@@ -1,68 +1,77 @@
 import { db } from './firebaseConfig.js';
-import {
-  doc,
-  setDoc,
-  getDoc,
-  collection,
-  getDocs,
-  query,
-  where
-} from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
+import { doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
-// Players array (always 5)
+// Players array
 const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
 
-// Points rules for venue/leaderboard
-const venuePoints = [5, 4, 3, -1, -2];
-
-// Save draft button
+// =============================
+// SAVE DRAFT
+// =============================
 document.getElementById('save-draft-btn').addEventListener('click', async () => {
-  await saveScores(false); // submitted = false for draft
+  await saveScores(false);
   alert('Draft saved successfully!');
 });
 
-// Submit all scores button
+// =============================
+// SUBMIT SCORES
+// =============================
 document.getElementById('score-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  await saveScores(true); // submitted = true
+  await saveScores(true);
   alert('All scores submitted successfully!');
   e.target.reset();
 });
 
-// Function to save weekly/home game scores
+// =============================
+// SAVE SCORES FUNCTION
+// =============================
 async function saveScores(submitted) {
   const week = document.getElementById('week').value;
   const formData = new FormData(document.getElementById('score-form'));
 
   for (const player of players) {
-    const wildScalps = parseInt(formData.get(`wildScalps[${player}]`)) || 0;
-    const headHunter = parseInt(formData.get(`headHunter[${player}]`)) || 0;
-    const winningGame = formData.get(`winningGame[${player}]`) === "on";
-    const finalTable = formData.get(`finalTable[${player}]`) === "on";
-    const goldenSnitch = formData.get(`goldenSnitch[${player}]`) === "on";
-    const snitchElim = formData.get(`snitchElim[${player}]`) === "on";
-    const assassinated = formData.get(`assassinated[${player}]`) === "on";
-
-    const docId = `${week}_${player}`;
     const scoreData = {
       player,
       week,
-      wildScalps,
-      headHunter,
-      winningGame,
-      finalTable,
-      goldenSnitch,
-      snitchElim,
-      assassinated,
+
+      // Bounties
+      wildScalps: parseInt(formData.get(`wildScalps[${player}]`)) || 0,
+      headHunter: parseInt(formData.get(`headHunter[${player}]`)) || 0,
+
+      // Negative
+      eliminated: parseInt(formData.get(`eliminated[${player}]`)) || 0,
+
+      // Snitch
+      goldenSnitch: parseInt(formData.get(`goldenSnitch[${player}]`)) || 0,
+      snitchElim: parseInt(formData.get(`snitchElim[${player}]`)) || 0,
+      snitchHolderBounty: parseInt(formData.get(`snitchHolderBounty[${player}]`)) || 0,
+
+      // Final table position
+      finalPosition: parseInt(formData.get(`finalPosition[${player}]`)) || null,
+
+      // Break logic
+      rebuy: formData.get(`rebuy[${player}]`) === "on",
+      savedByBreak: formData.get(`savedByBreak[${player}]`) === "on",
+
+      // Fish Favourite
+      fishBounty72: parseInt(formData.get(`fishBounty72[${player}]`)) || 0,
+      fishKO72: parseInt(formData.get(`fishKO72[${player}]`)) || 0,
+
+      // Special hand bounty
+      deathByQuads: parseInt(formData.get(`deathByQuads[${player}]`)) || 0,
+
       submitted,
       timestamp: new Date()
     };
 
+    const docId = `${week}_${player}`;
     await setDoc(doc(db, 'scores', docId), scoreData, { merge: true });
   }
 }
 
-// Load scores for selected week (draft or submitted)
+// =============================
+// LOAD SCORES FOR WEEK
+// =============================
 async function loadScoresForWeek(week) {
   const scoreForm = document.getElementById('score-form');
 
@@ -73,27 +82,33 @@ async function loadScoresForWeek(week) {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
+
       setInputValue(scoreForm, `wildScalps[${player}]`, data.wildScalps ?? 0);
       setInputValue(scoreForm, `headHunter[${player}]`, data.headHunter ?? 0);
-      setCheckboxValue(scoreForm, `winningGame[${player}]`, data.winningGame ?? false);
-      setCheckboxValue(scoreForm, `finalTable[${player}]`, data.finalTable ?? false);
-      setCheckboxValue(scoreForm, `goldenSnitch[${player}]`, data.goldenSnitch ?? false);
-      setCheckboxValue(scoreForm, `snitchElim[${player}]`, data.snitchElim ?? false);
-      setCheckboxValue(scoreForm, `assassinated[${player}]`, data.assassinated ?? false);
+      setInputValue(scoreForm, `eliminated[${player}]`, data.eliminated ?? 0);
+
+      setInputValue(scoreForm, `goldenSnitch[${player}]`, data.goldenSnitch ?? 0);
+      setInputValue(scoreForm, `snitchElim[${player}]`, data.snitchElim ?? 0);
+      setInputValue(scoreForm, `snitchHolderBounty[${player}]`, data.snitchHolderBounty ?? 0);
+
+      setInputValue(scoreForm, `finalPosition[${player}]`, data.finalPosition ?? "");
+
+      setCheckboxValue(scoreForm, `rebuy[${player}]`, data.rebuy ?? false);
+      setCheckboxValue(scoreForm, `savedByBreak[${player}]`, data.savedByBreak ?? false);
+
+      setInputValue(scoreForm, `fishBounty72[${player}]`, data.fishBounty72 ?? 0);
+      setInputValue(scoreForm, `fishKO72[${player}]`, data.fishKO72 ?? 0);
+      setInputValue(scoreForm, `deathByQuads[${player}]`, data.deathByQuads ?? 0);
+
     } else {
-      // Reset inputs if no data
-      setInputValue(scoreForm, `wildScalps[${player}]`, 0);
-      setInputValue(scoreForm, `headHunter[${player}]`, 0);
-      setCheckboxValue(scoreForm, `winningGame[${player}]`, false);
-      setCheckboxValue(scoreForm, `finalTable[${player}]`, false);
-      setCheckboxValue(scoreForm, `goldenSnitch[${player}]`, false);
-      setCheckboxValue(scoreForm, `snitchElim[${player}]`, false);
-      setCheckboxValue(scoreForm, `assassinated[${player}]`, false);
+      resetPlayerInputs(scoreForm, player);
     }
   }
 }
 
-// Helper functions
+// =============================
+// HELPERS
+// =============================
 function setInputValue(form, name, value) {
   const input = form.querySelector(`[name="${name}"]`);
   if (input) input.value = value;
@@ -104,47 +119,33 @@ function setCheckboxValue(form, name, checked) {
   if (input) input.checked = checked;
 }
 
-// Reload scores when week selection changes
+function resetPlayerInputs(form, player) {
+  setInputValue(form, `wildScalps[${player}]`, 0);
+  setInputValue(form, `headHunter[${player}]`, 0);
+  setInputValue(form, `eliminated[${player}]`, 0);
+
+  setInputValue(form, `goldenSnitch[${player}]`, 0);
+  setInputValue(form, `snitchElim[${player}]`, 0);
+  setInputValue(form, `snitchHolderBounty[${player}]`, 0);
+
+  setInputValue(form, `finalPosition[${player}]`, "");
+
+  setCheckboxValue(form, `rebuy[${player}]`, false);
+  setCheckboxValue(form, `savedByBreak[${player}]`, false);
+
+  setInputValue(form, `fishBounty72[${player}]`, 0);
+  setInputValue(form, `fishKO72[${player}]`, 0);
+  setInputValue(form, `deathByQuads[${player}]`, 0);
+}
+
+// =============================
+// WEEK CHANGE LISTENER
+// =============================
 document.getElementById('week').addEventListener('change', (e) => {
   loadScoresForWeek(e.target.value);
 });
 
-// Load initial week on page load
 window.addEventListener('DOMContentLoaded', () => {
   const selectedWeek = document.getElementById('week').value;
   loadScoresForWeek(selectedWeek);
-});
-
-// Venue / Leaderboard submission
-document.getElementById('venue-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const week = document.getElementById('week').value;
-  const form = e.target;
-  const venueData = [];
-
-  for (let rank = 1; rank <= 5; rank++) {
-    const checkboxes = form.querySelectorAll(`input[name="venueRank[${rank}][]"]:checked`);
-    checkboxes.forEach((checkbox) => {
-      venueData.push({
-        player: checkbox.value,
-        points: venuePoints[rank - 1],
-        rank
-      });
-    });
-  }
-
-  for (const entry of venueData) {
-    const docId = `${week}_${entry.player}`;
-    await setDoc(doc(db, 'venueTotals', docId), {
-      player: entry.player,
-      week,
-      total: entry.points,
-      latestVenueRank: entry.rank,
-      timestamp: new Date()
-    }, { merge: true });
-  }
-
-  alert('Venue leaderboard submitted successfully!');
-  form.reset();
 });
