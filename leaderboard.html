@@ -99,7 +99,7 @@
     <thead>
       <tr>
         <th>Player</th>
-        <th>Final Position</th>
+        <th>Final Table Points</th>
         <th>Total Points</th>
         <th>Details</th>
       </tr>
@@ -114,7 +114,7 @@ import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.3.0/f
 
 const tableBody = document.querySelector('#leaderboard-table tbody');
 const players = ["Micheal","Tom","Luke","Jeff","Jordan","Travis"];
-const finalPoints = [50,40,30,20,10];
+const finalPoints = [50,40,30,20,10]; // Points per position 1-5
 
 async function loadLeaderboard() {
   const scoresSnap = await getDocs(collection(db, 'scores'));
@@ -128,12 +128,21 @@ async function loadLeaderboard() {
   const leaderboard = players.map(player=>{
     const playerScores = scores[player] || [];
     const totals = {
-      wildScalps:0, headHunter:0, eliminated:0,
-      goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
-      finalPosition:0, rebuy:0, savedByBreak:0,
-      fishBounty72:0, fishKO72:0, deathByQuads:0,
+      wildScalps:0,
+      headHunter:0,
+      eliminated:0,
+      goldenSnitch:0,
+      snitchElim:0,
+      snitchHolderBounty:0,
+      finalPosition:0,
+      rebuy:0,
+      savedByBreak:0,
+      fishBounty72:0,
+      fishKO72:0,
+      deathByQuads:0,
       totalPoints:0
     };
+
     playerScores.forEach(s=>{
       totals.wildScalps += s.wildScalps*5;
       totals.headHunter += s.headHunter*10;
@@ -142,25 +151,35 @@ async function loadLeaderboard() {
       totals.snitchElim += s.snitchElim*-25;
       totals.snitchHolderBounty += s.snitchHolderBounty*5;
       if(s.finalPosition) totals.finalPosition += finalPoints[s.finalPosition-1];
-      totals.rebuy += s.rebuy?0:0;
-      totals.savedByBreak += s.savedByBreak?10:0;
+      totals.rebuy += s.rebuy ? -10 : 0; // Fixed rebuy logic
+      totals.savedByBreak += s.savedByBreak ? 10 : 0;
       totals.fishBounty72 += s.fishBounty72*72;
       totals.fishKO72 += s.fishKO72*36;
       totals.deathByQuads += s.deathByQuads*40;
-      totals.totalPoints = totals.wildScalps+totals.headHunter+totals.eliminated+
-        totals.goldenSnitch+totals.snitchElim+totals.snitchHolderBounty+
-        totals.finalPosition+totals.savedByBreak+totals.fishBounty72+
-        totals.fishKO72+totals.deathByQuads;
     });
+
+    totals.totalPoints = totals.wildScalps +
+                         totals.headHunter +
+                         totals.eliminated +
+                         totals.goldenSnitch +
+                         totals.snitchElim +
+                         totals.snitchHolderBounty +
+                         totals.finalPosition +
+                         totals.rebuy +
+                         totals.savedByBreak +
+                         totals.fishBounty72 +
+                         totals.fishKO72 +
+                         totals.deathByQuads;
+
     return { player, ...totals };
   });
 
   // Sort by total points descending
-  leaderboard.sort((a,b) => b.totalPoints - a.totalPoints);
+  leaderboard.sort((a,b)=>b.totalPoints - a.totalPoints);
 
   tableBody.innerHTML = '';
 
-  leaderboard.forEach(l => {
+  leaderboard.forEach(l=>{
     // Main row
     const row = document.createElement('tr');
     row.innerHTML = `
@@ -178,14 +197,14 @@ async function loadLeaderboard() {
       <td colspan="4">
         Wild Scalps: ${l.wildScalps}, Head Hunter: ${l.headHunter}, Eliminated: ${l.eliminated}, 
         Golden Snitch: ${l.goldenSnitch}, Snitch Elim: ${l.snitchElim}, Snitch Holder Bounty: ${l.snitchHolderBounty}, 
-        Rebuy: ${l.rebuy}, Saved By Break: ${l.savedByBreak}, Fish 7-2 Bounty: ${l.fishBounty72}, Fish 7-2 KO: ${l.fishKO72}, Death by Quads: ${l.deathByQuads}
+        Rebuy Bust: ${l.rebuy}, Saved By Break: ${l.savedByBreak}, Fish 7-2 Bounty: ${l.fishBounty72}, Fish 7-2 KO: ${l.fishKO72}, Death by Quads: ${l.deathByQuads}
       </td>
     `;
     tableBody.appendChild(detailsRow);
 
     // Toggle button
-    row.querySelector('.toggle-btn').addEventListener('click', () => {
-      const isVisible = detailsRow.style.display === 'table-row';
+    row.querySelector('.toggle-btn').addEventListener('click',()=>{
+      const isVisible = detailsRow.style.display==='table-row';
       detailsRow.style.display = isVisible ? 'none' : 'table-row';
       row.querySelector('.toggle-btn').textContent = isVisible ? 'Show' : 'Hide';
     });
