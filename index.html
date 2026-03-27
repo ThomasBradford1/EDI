@@ -21,27 +21,27 @@
 
   .trophy-container {
     position: relative;
-    width: 150px;
-    height: 200px;
+    width: 300px; /* doubled from 150px */
+    height: 400px; /* doubled from 200px */
     z-index: 2;
   }
 
   .trophy {
     width: 100%;
-    transform: translateY(50px) scale(0.8);
+    transform: translateY(60px) scale(0.6); /* smaller start for bigger pop */
     animation: liftCup 2s forwards;
   }
 
   @keyframes liftCup {
-    0% { transform: translateY(50px) scale(0.8); }
-    60% { transform: translateY(-20px) scale(1.1); }
-    80% { transform: translateY(-10px) scale(1.05); }
+    0% { transform: translateY(60px) scale(0.6); }
+    50% { transform: translateY(-40px) scale(1.3); } /* bigger pop */
+    70% { transform: translateY(-15px) scale(1.15); }
     100% { transform: translateY(0px) scale(1); }
   }
 
   .text {
     opacity: 0;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: bold;
     margin-top: 20px;
     z-index: 2;
@@ -53,7 +53,6 @@
     to { opacity: 1; }
   }
 
-  /* Confetti styles */
   .confetti {
     position: absolute;
     width: 10px;
@@ -65,7 +64,6 @@
     border-radius: 3px;
   }
 
-  /* Skip button */
   #skip-btn {
     position: fixed;
     bottom: 20px;
@@ -131,7 +129,7 @@
   // Automatic redirect after 5s
   const redirectTimeout = setTimeout(redirectToLeaderboard, 5000);
 
-  // Skip button click
+  // Skip button
   document.getElementById("skip-btn").addEventListener("click", () => {
     clearTimeout(confettiTimeout);
     clearTimeout(redirectTimeout);
