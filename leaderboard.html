@@ -1,47 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jordoncup Leaderboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  /* Reset & base */
   body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0 10px;
     background: #f0f0f0;
-    color: #333;
   }
 
   h1 {
     text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.8rem;
+    margin: 20px 0;
   }
 
-  /* Table wrapper for desktop scroll */
+  /* Admin Login button */
+  #login-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 8px 12px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
   .table-wrapper {
     overflow-x: auto;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    min-width: 800px;
-    background: #fff;
-    border-radius: 8px;
+    min-width: 400px;
+    background: white;
+    border-radius: 10px;
     overflow: hidden;
   }
 
-  th, td {
-    padding: 10px 12px;
-    border-bottom: 1px solid #ccc;
-    text-align: center;
-  }
-
-  th {
+  thead tr {
     background-color: #4caf50;
     color: white;
     font-weight: 600;
@@ -50,116 +53,47 @@
     z-index: 1;
   }
 
-  td:first-child, th:first-child {
+  th, td {
+    padding: 8px 10px;
+    text-align: center;
+    border-bottom: 1px solid #c6e0b4;
+    white-space: nowrap;
+  }
+
+  th:nth-child(1), td:nth-child(1) {
     text-align: left;
     font-weight: 700;
     color: #2e7d32;
   }
 
+  .details {
+    display: none;
+  }
+
+  .details td {
+    font-size: 0.85rem;
+    color: #555;
+  }
+
   .toggle-btn {
     cursor: pointer;
-    color: #4caf50;
+    color: #2196F3;
     text-decoration: underline;
   }
 
-  /* Mobile-first: stacked card layout */
-  @media (max-width: 700px) {
-    table, thead, tbody, th, td, tr {
-      display: block;
-    }
-
-    thead {
-      display: none;
-    }
-
-    tr {
-      background: #fff;
-      margin-bottom: 15px;
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-      position: relative;
-    }
-
-    td {
-      border: none;
-      padding: 6px 0;
-      text-align: left;
-      position: relative;
-    }
-
-    td::before {
-      content: attr(data-label);
-      font-weight: 600;
-      display: inline-block;
-      width: 140px;
-      color: #555;
-    }
-
-    td.player-name {
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: #2e7d32;
-    }
-
-    td.total-points {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #4caf50;
-    }
-
-    td.toggle-btn {
-      text-decoration: underline;
-      color: #4caf50;
-    }
-
-    /* Details card styling */
-    .details {
-      display: none;
-      margin-top: 10px;
-      padding: 12px;
-      background: #f9f9f9;
-      border-radius: 6px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-    }
-
-    tr.show .details {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 15px;
-    }
-
-    .details div {
-      background: #fff;
-      padding: 6px 10px;
-      border-radius: 4px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-      font-size: 0.9rem;
-      text-align: center;
+  @media (max-width: 600px) {
+    table {
+      min-width: 350px;
     }
   }
-
 </style>
 </head>
+
 <body>
 <h1>Jordoncup Leaderboard</h1>
-<button id="login-btn" style="
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  padding: 8px 12px;
-  background: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;">Admin Login</button>
 
-<div id="login-container" style="display:none;">
-  <input type="email" id="email" placeholder="Email" />
-  <input type="password" id="password" placeholder="Password" />
-  <button id="submit-login">Login</button>
-  <p id="login-error" style="color:red;"></p>
-</div>
+<button id="login-btn" onclick="window.location.href='login.html'">Admin Login</button>
+
 <div class="table-wrapper">
   <table id="leaderboard-table">
     <thead>
@@ -180,77 +114,80 @@ import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.3.0/f
 
 const tableBody = document.querySelector('#leaderboard-table tbody');
 const players = ["Micheal","Tom","Luke","Jeff","Jordan"];
-
-const finalPointsMapping = [50, 40, 30, 20, 10]; // 1st→50, 5th→10
+const finalPoints = [50,40,30,20,10];
 
 async function loadLeaderboard() {
   const scoresSnap = await getDocs(collection(db, 'scores'));
   const scores = {};
   scoresSnap.forEach(doc => {
     const data = doc.data();
-    if (!scores[data.player]) scores[data.player] = [];
+    if(!scores[data.player]) scores[data.player]=[];
     scores[data.player].push(data);
   });
 
-  const leaderboard = players.map(player => {
+  const leaderboard = players.map(player=>{
     const playerScores = scores[player] || [];
     const totals = {
-      wildScalps: 0, headHunter: 0, eliminated: 0,
-      goldenSnitch: 0, snitchElim: 0, snitchBeast: 0,
-      finalPosition: 0, rebuyBust: 0, savedByBell: 0,
-      fish72Bounty: 0, fish72Elim: 0, deathByQuadsOrSF: 0,
-      totalPoints: 0
+      wildScalps:0, headHunter:0, eliminated:0,
+      goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
+      finalPosition:0, rebuy:0, savedByBreak:0,
+      fishBounty72:0, fishKO72:0, deathByQuads:0,
+      totalPoints:0
     };
-
-    playerScores.forEach(s => {
-      totals.wildScalps += s.wildScalps * 5;
-      totals.headHunter += s.headHunter * 10;
-      totals.eliminated += s.eliminated * -10;
-      totals.goldenSnitch += s.goldenSnitch * 10;
-      totals.snitchElim += s.snitchElim * -25;
-      totals.snitchBeast += s.snitchBeast * 5;
-      totals.finalPosition += s.finalPosition ? finalPointsMapping[s.finalPosition - 1] : 0;
-      totals.rebuyBust += s.rebuyBust ? -10 : 0;
-      totals.savedByBell += s.savedByBell ? 10 : 0;
-      totals.fish72Bounty += s.fish72Bounty * 72;
-      totals.fish72Elim += s.fish72Elim * 36;
-      totals.deathByQuadsOrSF += s.deathByQuadsOrSF * 40;
+    playerScores.forEach(s=>{
+      totals.wildScalps += s.wildScalps*5;
+      totals.headHunter += s.headHunter*10;
+      totals.eliminated += s.eliminated*-10;
+      totals.goldenSnitch += s.goldenSnitch*10;
+      totals.snitchElim += s.snitchElim*-25;
+      totals.snitchHolderBounty += s.snitchHolderBounty*5;
+      if(s.finalPosition) totals.finalPosition += finalPoints[s.finalPosition-1];
+      totals.rebuy += s.rebuy?0:0;
+      totals.savedByBreak += s.savedByBreak?10:0;
+      totals.fishBounty72 += s.fishBounty72*72;
+      totals.fishKO72 += s.fishKO72*36;
+      totals.deathByQuads += s.deathByQuads*40;
+      totals.totalPoints = totals.wildScalps+totals.headHunter+totals.eliminated+
+        totals.goldenSnitch+totals.snitchElim+totals.snitchHolderBounty+
+        totals.finalPosition+totals.savedByBreak+totals.fishBounty72+
+        totals.fishKO72+totals.deathByQuads;
     });
-
-    totals.totalPoints = Object.values(totals).reduce((a,b)=>typeof b==='number'? a+b : a,0);
     return { player, ...totals };
   });
 
+  // Sort by total points descending
   leaderboard.sort((a,b) => b.totalPoints - a.totalPoints);
 
-  tableBody.innerHTML = leaderboard.map(l => `
-    <tr>
-      <td class="player-name" data-label="Player">${l.player}</td>
-      <td data-label="Final Position">${l.finalPosition}</td>
-      <td class="total-points" data-label="Total Points">${l.totalPoints}</td>
-      <td class="toggle-btn" data-label="Details">Show</td>
-      <td class="details">
-        <div>Wild Scalps: ${l.wildScalps}</div>
-        <div>Head Hunter: ${l.headHunter}</div>
-        <div>Eliminated: ${l.eliminated}</div>
-        <div>Golden Snitch: ${l.goldenSnitch}</div>
-        <div>Snitch Elim: ${l.snitchElim}</div>
-        <div>Snitch Beast: ${l.snitchBeast}</div>
-        <div>Rebuy Bust: ${l.rebuyBust}</div>
-        <div>Saved By Bell: ${l.savedByBell}</div>
-        <div>Fish 7-2 Bounty: ${l.fish72Bounty}</div>
-        <div>Fish 7-2 KO: ${l.fish72Elim}</div>
-        <div>Death by Quads/SF: ${l.deathByQuadsOrSF}</div>
-      </td>
-    </tr>
-  `).join('');
+  tableBody.innerHTML = '';
 
-  // Toggle details on click
-  document.querySelectorAll('.toggle-btn').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const tr = e.target.closest('tr');
-      tr.classList.toggle('show');
-      e.target.textContent = tr.classList.contains('show') ? 'Hide' : 'Show';
+  leaderboard.forEach(l => {
+    // Main row
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${l.player}</td>
+      <td>${l.finalPosition}</td>
+      <td>${l.totalPoints}</td>
+      <td><span class="toggle-btn">Show</span></td>
+    `;
+    tableBody.appendChild(row);
+
+    // Details row
+    const detailsRow = document.createElement('tr');
+    detailsRow.classList.add('details');
+    detailsRow.innerHTML = `
+      <td colspan="4">
+        Wild Scalps: ${l.wildScalps}, Head Hunter: ${l.headHunter}, Eliminated: ${l.eliminated}, 
+        Golden Snitch: ${l.goldenSnitch}, Snitch Elim: ${l.snitchElim}, Snitch Holder Bounty: ${l.snitchHolderBounty}, 
+        Rebuy: ${l.rebuy}, Saved By Break: ${l.savedByBreak}, Fish 7-2 Bounty: ${l.fishBounty72}, Fish 7-2 KO: ${l.fishKO72}, Death by Quads: ${l.deathByQuads}
+      </td>
+    `;
+    tableBody.appendChild(detailsRow);
+
+    // Toggle button
+    row.querySelector('.toggle-btn').addEventListener('click', () => {
+      const isVisible = detailsRow.style.display === 'table-row';
+      detailsRow.style.display = isVisible ? 'none' : 'table-row';
+      row.querySelector('.toggle-btn').textContent = isVisible ? 'Show' : 'Hide';
     });
   });
 }
