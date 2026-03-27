@@ -54,7 +54,7 @@ input[type="checkbox"] {
 .card-track {
   display: flex;
   transition: transform 0.3s ease;
-  touch-action: pan-y; /* prevents vertical scroll conflict */
+  touch-action: pan-y;
 }
 
 .player-card {
@@ -107,9 +107,12 @@ button:disabled {
   background: #000;
   padding: 12px;
   box-shadow: 0 -2px 10px rgba(0,0,0,0.6);
+  display: flex;
+  gap: 10px;
 }
 
 .submit-bar button {
+  flex: 1;
   margin: 0;
 }
 
@@ -141,14 +144,15 @@ if (localStorage.getItem("isAdmin") !== "true") {
 </div>
 
 <div class="nav-buttons">
-  <button type="button" id="prevBtn">←</button>
-  <button type="button" id="nextBtn">→</button>
+  <button type="button" id="prevBtn">← Previous</button>
+  <button type="button" id="nextBtn">Next →</button>
 </div>
 
 </div>
 
 <div class="submit-bar">
-  <button type="submit">SUBMIT WEEK</button>
+  <button type="button" id="submitWeek">SUBMIT WEEK</button>
+  <button type="button" id="toLeaderboard">LEADERBOARD</button>
 </div>
 
 <script type="module">
@@ -158,10 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const weekSelect = document.getElementById("week");
   const track = document.getElementById("card-track");
 
-  /* ==========================
-     GENERATE THURSDAYS
-  ========================== */
-
+  // Generate Thursdays
   let startDate = new Date("2026-04-03");
   let endDate = new Date("2026-06-25");
 
@@ -179,12 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
   homeOption.textContent = "🏠 Home Game";
   weekSelect.appendChild(homeOption);
 
-  /* ==========================
-     CREATE PLAYER CARDS
-  ========================== */
-
+  // Create player cards
   players.forEach(player => {
-
     const card = document.createElement("div");
     card.className = "player-card";
 
@@ -200,17 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
       <label>Golden Snitch (+10)</label>
       <input type="number" min="0" value="0">
 
-<div class="rule-section">
-  <label>Final Table Position</label>
-  <select class="final-position">
-    <option value="">--</option>
-    <option value="1">1st (+50)</option>
-    <option value="2">2nd (+40)</option>
-    <option value="3">3rd (+30)</option>
-    <option value="4">4th (+20)</option>
-    <option value="5">5th (+10)</option>
-  </select>
-</div>
+      <div class="rule-section">
+        <label>Final Table Position</label>
+        <select class="final-position">
+          <option value="">--</option>
+          <option value="1">1st (+50)</option>
+          <option value="2">2nd (+40)</option>
+          <option value="3">3rd (+30)</option>
+          <option value="4">4th (+20)</option>
+          <option value="5">5th (+10)</option>
+        </select>
+      </div>
 
       <div class="rule-section">
         <label><input type="checkbox"> Saved By The Bell (+10)</label>
@@ -229,10 +226,7 @@ document.addEventListener("DOMContentLoaded", () => {
     track.appendChild(card);
   });
 
-  /* ==========================
-     BUTTON NAVIGATION
-  ========================== */
-
+  // Button navigation
   let currentIndex = 0;
 
   function updateSlide() {
@@ -240,67 +234,44 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("prevBtn").onclick = () => {
-    if (currentIndex > 0) {
-      currentIndex--;
-      updateSlide();
-    }
+    if (currentIndex > 0) currentIndex--, updateSlide();
   };
 
   document.getElementById("nextBtn").onclick = () => {
-    if (currentIndex < players.length - 1) {
-      currentIndex++;
-      updateSlide();
-    }
+    if (currentIndex < players.length - 1) currentIndex++, updateSlide();
   };
 
-  /* ==========================
-     TOUCH SWIPE SUPPORT
-  ========================== */
-
+  // Touch swipe
   let startX = 0;
   let endX = 0;
 
-  track.addEventListener("touchstart", (e) => {
-    startX = e.touches[0].clientX;
-  });
-
+  track.addEventListener("touchstart", (e) => startX = e.touches[0].clientX);
   track.addEventListener("touchend", (e) => {
     endX = e.changedTouches[0].clientX;
-    handleSwipe();
+    const swipeDistance = startX - endX;
+    if (swipeDistance > 50 && currentIndex < players.length - 1) currentIndex++;
+    if (swipeDistance < -50 && currentIndex > 0) currentIndex--;
+    updateSlide();
   });
 
-  function handleSwipe() {
-    const swipeDistance = startX - endX;
-
-    if (swipeDistance > 50 && currentIndex < players.length - 1) {
-      currentIndex++;
-      updateSlide();
-    }
-
-    if (swipeDistance < -50 && currentIndex > 0) {
-      currentIndex--;
-      updateSlide();
-    }
-  }
-
-  /* ==========================
-     PREVENT DUPLICATE POSITIONS
-  ========================== */
-
+  // Prevent duplicate final positions
   document.querySelectorAll(".final-position").forEach(select=>{
     select.addEventListener("change",()=>{
       const values = [...document.querySelectorAll(".final-position")]
         .map(s=>s.value)
         .filter(v=>v !== "");
-
       const duplicates = values.filter((v,i,a)=>a.indexOf(v)!==i);
-
       if(duplicates.length > 0){
         alert("Duplicate final table positions not allowed.");
         select.value="";
       }
     });
   });
+
+  // Leaderboard button
+  document.getElementById("toLeaderboard").onclick = () => {
+    window.location.href = "leaderboard.html";
+  };
 
 });
 </script>
