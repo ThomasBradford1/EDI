@@ -137,6 +137,8 @@ async function loadLeaderboard() {
 
   const leaderboard = players.map(player=>{
     const playerScores = scores[player] || [];
+
+    // Totals for points (used in Total Points column)
     const totals = {
       wildScalps:0, headHunter:0, eliminated:0,
       goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
@@ -145,19 +147,42 @@ async function loadLeaderboard() {
       totalPoints:0
     };
 
+    // Counts for expanded view
+    const counts = {
+      wildScalps:0, headHunter:0, eliminated:0,
+      goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
+      finalPosition:0, rebuy:0, savedByBreak:0,
+      fishBounty72:0, fishKO72:0, deathByQuads:0
+    };
+
     playerScores.forEach(s=>{
-      totals.wildScalps += s.wildScalps*5;
-      totals.headHunter += s.headHunter*10;
-      totals.eliminated += s.eliminated*-10;
-      totals.goldenSnitch += s.goldenSnitch*10;
-      totals.snitchElim += s.snitchElim*-25;
-      totals.snitchHolderBounty += s.snitchHolderBounty*5;
+      // Counts for expanded view
+      counts.wildScalps += s.wildScalps;
+      counts.headHunter += s.headHunter;
+      counts.eliminated += s.eliminated;
+      counts.goldenSnitch += s.goldenSnitch;
+      counts.snitchElim += s.snitchElim;
+      counts.snitchHolderBounty += s.snitchHolderBounty;
+      counts.rebuy += s.rebuy ? 1 : 0;
+      counts.savedByBreak += s.savedByBreak ? 1 : 0;
+      counts.fishBounty72 += s.fishBounty72;
+      counts.fishKO72 += s.fishKO72;
+      counts.deathByQuads += s.deathByQuads;
+      counts.finalPosition += s.finalPosition || 0;
+
+      // Totals for points
+      totals.wildScalps += s.wildScalps * 5;
+      totals.headHunter += s.headHunter * 10;
+      totals.eliminated += s.eliminated * -10;
+      totals.goldenSnitch += s.goldenSnitch * 10;
+      totals.snitchElim += s.snitchElim * -25;
+      totals.snitchHolderBounty += s.snitchHolderBounty * 5;
       if(s.finalPosition) totals.finalPosition += finalPoints[s.finalPosition-1];
       totals.rebuy += s.rebuy ? -10 : 0;
       totals.savedByBreak += s.savedByBreak ? 10 : 0;
-      totals.fishBounty72 += s.fishBounty72*72;
-      totals.fishKO72 += s.fishKO72*36;
-      totals.deathByQuads += s.deathByQuads*40;
+      totals.fishBounty72 += s.fishBounty72 * 72;
+      totals.fishKO72 += s.fishKO72 * 36;
+      totals.deathByQuads += s.deathByQuads * 40;
     });
 
     totals.totalPoints = totals.wildScalps + totals.headHunter + totals.eliminated +
@@ -165,23 +190,17 @@ async function loadLeaderboard() {
                          totals.finalPosition + totals.rebuy + totals.savedByBreak +
                          totals.fishBounty72 + totals.fishKO72 + totals.deathByQuads;
 
-    return { player, finalPosition: totals.finalPosition, totalPoints: totals.totalPoints,
-             wildScalps: totals.wildScalps, headHunter: totals.headHunter, eliminated: totals.eliminated,
-             goldenSnitch: totals.goldenSnitch, snitchElim: totals.snitchElim,
-             snitchHolderBounty: totals.snitchHolderBounty, rebuy: totals.rebuy,
-             savedByBreak: totals.savedByBreak, fishBounty72: totals.fishBounty72,
-             fishKO72: totals.fishKO72, deathByQuads: totals.deathByQuads };
+    return { player, totals, counts };
   });
 
-  leaderboard.sort((a,b)=>b.totalPoints - a.totalPoints);
-
+  leaderboard.sort((a,b)=>b.totals.totalPoints - a.totals.totalPoints);
   tableBody.innerHTML = '';
 
   leaderboard.forEach(l=>{
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${l.player}</td>
-      <td>${l.totalPoints}</td>
+      <td>${l.totals.totalPoints}</td>
       <td><span class="toggle-btn">Show</span></td>
     `;
     tableBody.appendChild(row);
@@ -190,9 +209,9 @@ async function loadLeaderboard() {
     detailsRow.classList.add('details');
     detailsRow.innerHTML = `
       <td colspan="3">
-        Final Table Points: ${l.finalPosition}, Wild Scalps: ${l.wildScalps}, Head Hunter: ${l.headHunter}, Eliminated: ${l.eliminated}, 
-        Golden Snitch: ${l.goldenSnitch}, Snitch Elim: ${l.snitchElim}, Snitch Holder Bounty: ${l.snitchHolderBounty}, 
-        Rebuy Bust: ${l.rebuy}, Saved By Break: ${l.savedByBreak}, Fish 7-2 Bounty: ${l.fishBounty72}, Fish 7-2 KO: ${l.fishKO72}, Death by Quads: ${l.deathByQuads}
+        Final Table Points: ${l.totals.finalPosition}, Wild Scalps: ${l.counts.wildScalps}, Head Hunter: ${l.counts.headHunter}, Eliminated: ${l.counts.eliminated}, 
+        Golden Snitch: ${l.counts.goldenSnitch}, Snitch Elim: ${l.counts.snitchElim}, Snitch Holder Bounty: ${l.counts.snitchHolderBounty}, 
+        Rebuy Bust: ${l.counts.rebuy}, Saved By Break: ${l.counts.savedByBreak}, Fish 7-2 Bounty: ${l.counts.fishBounty72}, Fish 7-2 KO: ${l.counts.fishKO72}, Death by Quads: ${l.counts.deathByQuads}
       </td>
     `;
     tableBody.appendChild(detailsRow);
