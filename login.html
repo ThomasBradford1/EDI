@@ -36,8 +36,7 @@
       font-size: 2rem;
     }
 
-    #login-container input[type="email"],
-    #login-container input[type="password"] {
+    #login-container input {
       width: 100%;
       max-width: 300px;
       padding: 10px;
@@ -82,37 +81,22 @@
       min-height: 100vh;
     }
 
-    /* --- Hidden app container (required by app.js) --- */
-    #app-container {
-      display: none;
+    /* --- Mobile --- */
+    @media (max-width: 768px) {
+      body {
+        flex-direction: column;
+      }
+
+      #login-container {
+        height: 50%;
+        padding: 20px;
+      }
+
+      #image-side {
+        height: 50%;
+        background-size: cover;
+      }
     }
-
-    /* --- Responsive adjustments --- */
-@media (max-width: 768px) {
-  body {
-    flex-direction: column;
-    height: 100vh;
-  }
-
-  #login-container {
-    height: 50%; /* take half the screen */
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 20px;
-  }
-
-  #image-side {
-    height: 50%; /* take the other half */
-    width: 100%;
-    background-size: cover; /* fill container nicely */
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-}
-
-
   </style>
 </head>
 
@@ -129,27 +113,36 @@
   <!-- Right: Image -->
   <div id="image-side"></div>
 
-  <!-- Hidden app container required by app.js -->
-  <div id="app-container">
-    <h2>Welcome, <span id="user-email"></span>!</h2>
-    <div id="admin-panel" style="display:none;">
-      <h3>Admin Dashboard</h3>
-    </div>
-    <div id="user-panel" style="display:none;">
-      <h3>Leaderboard & Weekly Scores</h3>
-    </div>
-    <button id="logout-btn">Logout</button>
-  </div>
+  <!-- Firebase & Login Logic -->
+  <script type="module">
+    import { auth } from "./firebaseConfig.js";
+    import {
+      signInWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js";
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore-compat.js"></script>
+    const loginBtn = document.getElementById("login-btn");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginError = document.getElementById("login-error");
 
-  <!-- Your Firebase config -->
-  <script type="module" src="firebaseConfig.js"></script>
+    loginBtn.addEventListener("click", async () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
 
-  <!-- Login logic -->
-  <script type="module" src="app.js"></script>
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+
+        // ✅ Save admin flag (optional)
+        localStorage.setItem("isAdmin", "true");
+
+        // ✅ Redirect to admin page
+        window.location.href = "admin.html";
+
+      } catch (error) {
+        loginError.textContent = error.message;
+      }
+    });
+  </script>
+
 </body>
 </html>
