@@ -54,7 +54,7 @@ input[type="checkbox"] {
 .card-track {
   display: flex;
   transition: transform 0.3s ease;
-  touch-action: pan-y;
+  touch-action: pan-y; /* prevents vertical scroll conflict */
 }
 
 .player-card {
@@ -113,14 +113,14 @@ button:disabled {
   margin: 0;
 }
 
-.week-select {
-  margin-bottom: 20px;
-}
-
 .top-buttons {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+}
+
+.week-select {
+  margin-bottom: 20px;
 }
 </style>
 </head>
@@ -138,21 +138,22 @@ if (localStorage.getItem("isAdmin") !== "true") {
 
 <div class="container">
 
-<div class="top-buttons">
-  <button onclick="window.location.href='leaderboard.html'">Leaderboard</button>
-</div>
+  <div class="top-buttons">
+    <button onclick="window.location.href='leaderboard.html'">Leaderboard</button>
+    <button onclick="window.location.href='weekscores.html'">Week Scores</button>
+  </div>
 
-<label>Select Week</label>
-<select id="week" class="week-select"></select>
+  <label>Select Week</label>
+  <select id="week" class="week-select"></select>
 
-<div class="card-wrapper">
-  <div class="card-track" id="card-track"></div>
-</div>
+  <div class="card-wrapper">
+    <div class="card-track" id="card-track"></div>
+  </div>
 
-<div class="nav-buttons">
-  <button type="button" id="prevBtn">←</button>
-  <button type="button" id="nextBtn">→</button>
-</div>
+  <div class="nav-buttons">
+    <button type="button" id="prevBtn">←</button>
+    <button type="button" id="nextBtn">→</button>
+  </div>
 
 </div>
 
@@ -162,7 +163,7 @@ if (localStorage.getItem("isAdmin") !== "true") {
 
 <script type="module">
 import { db } from './firebaseConfig.js';
-import { collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
+import { doc, setDoc } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -170,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const weekSelect = document.getElementById("week");
   const track = document.getElementById("card-track");
 
-  // Generate weeks (Thursdays)
+  // Generate Thursdays
   let startDate = new Date("2026-04-03");
   let endDate = new Date("2026-06-25");
 
@@ -182,13 +183,13 @@ document.addEventListener("DOMContentLoaded", () => {
     startDate.setDate(startDate.getDate() + 7);
   }
 
-  // Home Game option
+  // Home Game
   const homeOption = document.createElement("option");
   homeOption.value = "HOME-GAME-2026";
   homeOption.textContent = "🏠 Home Game";
   weekSelect.appendChild(homeOption);
 
-  // Create player cards
+  // Create Player Cards
   players.forEach(player => {
     const card = document.createElement("div");
     card.className = "player-card";
@@ -196,16 +197,16 @@ document.addEventListener("DOMContentLoaded", () => {
       <h2>${player}</h2>
 
       <label>Wild Scalps (+5)</label>
-      <input type="number" min="0" value="0" class="wildScalps">
+      <input type="number" class="wildScalps" min="0" value="0">
 
       <label>Head Hunter (+10)</label>
-      <input type="number" min="0" value="0" class="headHunter">
+      <input type="number" class="headHunter" min="0" value="0">
 
       <label>Golden Snitch (+10)</label>
-      <input type="number" min="0" value="0" class="goldenSnitch">
+      <input type="number" class="goldenSnitch" min="0" value="0">
 
-      <label>Snitch Holder Bounty (+5)</label>
-      <input type="number" min="0" value="0" class="snitchHolderBounty">
+      <label>Snitch Bounty (+5)</label>
+      <input type="number" class="snitchHolderBounty" min="0" value="0">
 
       <div class="rule-section">
         <label>Final Table Position</label>
@@ -224,59 +225,55 @@ document.addEventListener("DOMContentLoaded", () => {
         <label><input type="checkbox" class="rebuy"> Rebuy Bust (-10)</label>
       </div>
 
-      <label>Eliminated (-10)</label>
-      <input type="number" min="0" value="0" class="eliminated">
+      <div class="rule-section">
+        <label>Eliminated (-10)</label>
+        <input type="number" class="eliminated" min="0" value="0">
 
-      <label>Snitch Elim (-25)</label>
-      <input type="number" min="0" value="0" class="snitchElim">
+        <label>Snitch Elim (-25)</label>
+        <input type="number" class="snitchElim" min="0" value="0">
 
-      <label>Fish 7-2 Bounty (+72)</label>
-      <input type="number" min="0" value="0" class="fishBounty72">
+        <label>Fish 7-2 Bounty (+72)</label>
+        <input type="number" class="fishBounty72" min="0" value="0">
 
-      <label>Fish 7-2 KO (+36)</label>
-      <input type="number" min="0" value="0" class="fishKO72">
+        <label>Fish 7-2 KO (+36)</label>
+        <input type="number" class="fishKO72" min="0" value="0">
 
-      <label>Death by Quads (+40)</label>
-      <input type="number" min="0" value="0" class="deathByQuads">
+        <label>Death by Quads (+40)</label>
+        <input type="number" class="deathByQuads" min="0" value="0">
+      </div>
     `;
     track.appendChild(card);
   });
 
-  // Slide navigation
+  // Navigation
   let currentIndex = 0;
-  function updateSlide() { track.style.transform = `translateX(-${currentIndex*100}%)`; }
-  document.getElementById("prevBtn").onclick = () => { if(currentIndex>0){currentIndex--; updateSlide();} };
-  document.getElementById("nextBtn").onclick = () => { if(currentIndex<players.length-1){currentIndex++; updateSlide();} };
+  const updateSlide = () => { track.style.transform = `translateX(-${currentIndex*100}%)`; };
+  document.getElementById("prevBtn").onclick = () => { if(currentIndex>0){currentIndex--; updateSlide();}};
+  document.getElementById("nextBtn").onclick = () => { if(currentIndex<players.length-1){currentIndex++; updateSlide();}};
 
-  // Touch support
-  let startX=0, endX=0;
-  track.addEventListener("touchstart", e => startX = e.touches[0].clientX );
+  // Swipe support
+  let startX = 0, endX = 0;
+  track.addEventListener("touchstart", e => startX = e.touches[0].clientX);
   track.addEventListener("touchend", e => { endX = e.changedTouches[0].clientX; handleSwipe(); });
-  function handleSwipe(){
-    const dist = startX-endX;
-    if(dist>50 && currentIndex<players.length-1){ currentIndex++; updateSlide(); }
-    if(dist<-50 && currentIndex>0){ currentIndex--; updateSlide(); }
+  function handleSwipe() {
+    const diff = startX - endX;
+    if(diff>50 && currentIndex<players.length-1) currentIndex++;
+    if(diff<-50 && currentIndex>0) currentIndex--;
+    updateSlide();
   }
 
-  // Prevent duplicate final positions
-  document.querySelectorAll(".final-position").forEach(sel=>{
-    sel.addEventListener("change", ()=>{
-      const values = [...document.querySelectorAll(".final-position")].map(s=>s.value).filter(v=>v!=="");
-      const duplicates = values.filter((v,i,a)=>a.indexOf(v)!==i);
-      if(duplicates.length>0){ alert("Duplicate final table positions not allowed."); sel.value=""; }
-    });
-  });
-
-  // Submit week
-  document.getElementById("submitWeekBtn").addEventListener("click", async ()=>{
+  // Submit Week
+  document.getElementById("submitWeekBtn").addEventListener("click", async () => {
     const week = weekSelect.value;
-    if(!week){ alert("Please select a week."); return; }
+    if(!week){ alert("Select a week!"); return; }
 
     const cards = document.querySelectorAll(".player-card");
-    for(let i=0; i<cards.length; i++){
+    for(let i=0;i<cards.length;i++){
       const card = cards[i];
+      const player = players[i];
+
       const data = {
-        player: players[i],
+        player,
         week,
         wildScalps: Number(card.querySelector(".wildScalps").value),
         headHunter: Number(card.querySelector(".headHunter").value),
@@ -291,13 +288,17 @@ document.addEventListener("DOMContentLoaded", () => {
         fishKO72: Number(card.querySelector(".fishKO72").value),
         deathByQuads: Number(card.querySelector(".deathByQuads").value)
       };
-      await addDoc(collection(db,'scores'), data);
+
+      const docId = `${week}-${player}`.replace(/\s+/g,'_');
+      await setDoc(doc(db,'scores',docId), data);
     }
+
     alert("Week submitted successfully!");
     window.location.href = "leaderboard.html";
   });
 
 });
 </script>
+
 </body>
 </html>
