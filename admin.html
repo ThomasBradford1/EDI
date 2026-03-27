@@ -4,263 +4,29 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Jordoncup Admin</title>
-
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #111;
-  color: white;
-}
-
-header {
-  padding: 16px;
-  text-align: center;
-  background: #1c1c1c;
-  font-size: 1.2rem;
-  font-weight: bold;
-}
-
-.container {
-  padding: 16px;
-}
-
-label {
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-
-select, input[type="number"] {
-  width: 100%;
-  padding: 10px;
-  margin-top: 4px;
-  margin-bottom: 14px;
-  border-radius: 8px;
-  border: none;
-  font-size: 1rem;
-}
-
-input[type="checkbox"] {
-  transform: scale(1.3);
-  margin-right: 8px;
-}
-
-.card-wrapper {
-  overflow: hidden;
-}
-
-.card-track {
-  display: flex;
-  transition: transform 0.3s ease;
-}
-
-.player-card {
-  min-width: 100%;
-  box-sizing: border-box;
-  padding: 20px;
-  background: #1c1c1c;
-  border-radius: 14px;
-}
-
-.player-card h2 {
-  margin-top: 0;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.rule-section {
-  border-top: 1px solid #333;
-  padding-top: 10px;
-  margin-top: 10px;
-}
-
-.nav-buttons {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 10px;
-}
-
-button {
-  background: gold;
-  border: none;
-  padding: 14px;
-  border-radius: 10px;
-  font-weight: bold;
-  font-size: 1rem;
-  width: 100%;
-  margin-top: 10px;
-}
-
-button:disabled {
-  background: #555;
-}
-
-.submit-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #000;
-  padding: 12px;
-  box-shadow: 0 -2px 10px rgba(0,0,0,0.6);
-}
-
-.submit-bar button {
-  margin: 0;
-}
-
-.week-select {
-  margin-bottom: 20px;
-}
+  body { margin: 0; font-family: Arial; background:#111; color:white; padding:10px; }
+  header { padding: 16px; text-align:center; background:#1c1c1c; font-size:1.2rem; font-weight:bold; }
+  .container { padding:16px; }
+  label { display:block; margin-top:10px; opacity:0.8; }
+  input, select { width:100%; padding:8px; margin-top:4px; border-radius:6px; border:none; font-size:1rem; }
 </style>
 </head>
-
 <body>
 
-<header>Jordoncup Admin</header>
-
-<div class="container">
-
-<label>Week</label>
-<select id="week" class="week-select"></select>
-
-<div class="card-wrapper">
-  <div class="card-track" id="card-track"></div>
-</div>
-
-<div class="nav-buttons">
-  <button type="button" id="prevBtn">←</button>
-  <button type="button" id="nextBtn">→</button>
-</div>
-
-</div>
-
-<div class="submit-bar">
-  <button type="submit" form="score-form">SUBMIT WEEK</button>
-</div>
-
-<form id="score-form"></form>
-
 <script type="module">
-document.addEventListener("DOMContentLoaded", () => {
-
-  window.players = ["Micheal","Tom","Luke","Jeff","Jordan","Travis"];
-
-  const weeks = [
-    "2026-01-08","2026-01-15","2026-01-22",
-    "2026-01-29","2026-02-05","2026-02-12",
-    "2026-02-19","2026-02-26","2026-03-05",
-    "2026-03-12","2026-03-19","2026-03-26"
-  ];
-
-  const weekSelect = document.getElementById("week");
-  weeks.forEach(d=>{
-    const opt=document.createElement("option");
-    opt.value=d;
-    opt.textContent=`Week - ${new Date(d).toLocaleDateString("en-AU")}`;
-    weekSelect.appendChild(opt);
-  });
-
-  const track = document.getElementById("card-track");
-  const form = document.getElementById("score-form");
-
-  window.players.forEach(player => {
-
-    const card = document.createElement("div");
-    card.className = "player-card";
-
-    card.innerHTML = `
-      <h2>${player}</h2>
-
-      <label>Wild Scalps (+5)</label>
-      <input type="number" name="wildScalps[${player}]" min="0" value="0">
-
-      <label>Head Hunter (+10)</label>
-      <input type="number" name="headHunter[${player}]" min="0" value="0">
-
-      <label>Golden Snitch (+10)</label>
-      <input type="number" name="goldenSnitch[${player}]" min="0" value="0">
-
-      <label>Snitch Beast (+5)</label>
-      <input type="number" name="snitchBeast[${player}]" min="0" value="0">
-
-      <div class="rule-section">
-        <label>Final Table Position</label>
-        <select name="finalPosition[${player}]" class="final-position">
-          <option value="">--</option>
-          <option value="1">1st (+5)</option>
-          <option value="2">2nd (+4)</option>
-          <option value="3">3rd (+3)</option>
-          <option value="4">4th (+2)</option>
-          <option value="5">5th (+1)</option>
-        </select>
-      </div>
-
-      <div class="rule-section">
-        <label><input type="checkbox" name="savedByBell[${player}]"> Saved By The Bell (+10)</label>
-        <label><input type="checkbox" name="rebuyBust[${player}]"> Rebuy Bust (-10)</label>
-      </div>
-
-      <div class="rule-section">
-        <label>Assassinated (-10)</label>
-        <input type="number" name="assassinated[${player}]" min="0" value="0">
-
-        <label>Snitch Elim (-25)</label>
-        <input type="number" name="snitchElim[${player}]" min="0" value="0">
-      </div>
-
-      <div class="rule-section">
-        <label>Fish 7-2 Bounty (+72)</label>
-        <input type="number" name="fish72Bounty[${player}]" min="0" value="0">
-
-        <label>Fish 7-2 Eliminated (+36)</label>
-        <input type="number" name="fish72Elim[${player}]" min="0" value="0">
-
-        <label>Death by Quads / SF (+40)</label>
-        <input type="number" name="deathByQuadsOrSF[${player}]" min="0" value="0">
-      </div>
-    `;
-
-    track.appendChild(card);
-  });
-
-  // Swipe navigation
-  let currentIndex = 0;
-
-  function updateSlide() {
-    track.style.transform = `translateX(-${currentIndex * 100}%)`;
-  }
-
-  document.getElementById("prevBtn").onclick = () => {
-    if(currentIndex > 0) currentIndex--;
-    updateSlide();
-  };
-
-  document.getElementById("nextBtn").onclick = () => {
-    if(currentIndex < window.players.length - 1) currentIndex++;
-    updateSlide();
-  };
-
-  // Prevent duplicate final positions
-  document.querySelectorAll(".final-position").forEach(select=>{
-    select.addEventListener("change",()=>{
-      const values = [...document.querySelectorAll(".final-position")]
-        .map(s=>s.value)
-        .filter(v=>v !== "");
-
-      const duplicates = values.filter((v,i,a)=>a.indexOf(v)!==i);
-
-      if(duplicates.length > 0){
-        alert("Duplicate final table positions not allowed.");
-        select.value="";
-      }
-    });
-  });
-
-});
+// Block access if not admin
+if(localStorage.getItem("isAdmin") !== "true") {
+  alert("Access denied. Please login as admin.");
+  window.location.href = "leaderboard.html";
+}
 </script>
 
-<script type="module" src="admin.js"></script>
+<header>Jordoncup Admin</header>
+<div class="container">
+  <p>Admin panel content goes here.</p>
+  <!-- Your full admin form/cards can be here -->
+</div>
 
 </body>
 </html>
