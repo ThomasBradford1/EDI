@@ -28,8 +28,8 @@ header {
 label {
   font-size: 0.85rem;
   opacity: 0.8;
-  display:block;
-  margin-top:10px;
+  display: block;
+  margin-top: 10px;
 }
 
 select, input[type="number"] {
@@ -54,6 +54,7 @@ input[type="checkbox"] {
 .card-track {
   display: flex;
   transition: transform 0.3s ease;
+  touch-action: pan-y; /* prevents vertical scroll conflict */
 }
 
 .player-card {
@@ -91,6 +92,7 @@ button {
   font-size: 1rem;
   width: 100%;
   margin-top: 10px;
+  cursor: pointer;
 }
 
 button:disabled {
@@ -120,8 +122,8 @@ button:disabled {
 <body>
 
 <script type="module">
-// 🔐 Block access if not admin
-if(localStorage.getItem("isAdmin") !== "true") {
+// 🔐 Admin protection
+if (localStorage.getItem("isAdmin") !== "true") {
   alert("Access denied. Please login as admin.");
   window.location.href = "login.html";
 }
@@ -131,7 +133,7 @@ if(localStorage.getItem("isAdmin") !== "true") {
 
 <div class="container">
 
-<label>Week</label>
+<label>Select Week</label>
 <select id="week" class="week-select"></select>
 
 <div class="card-wrapper">
@@ -146,20 +148,19 @@ if(localStorage.getItem("isAdmin") !== "true") {
 </div>
 
 <div class="submit-bar">
-  <button type="submit" form="score-form">SUBMIT WEEK</button>
+  <button type="submit">SUBMIT WEEK</button>
 </div>
 
-<form id="score-form"></form>
-
 <script type="module">
-
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ✅ Players
   const players = ["Micheal","Tom","Luke","Jeff","Jordan","Travis"];
-
-  // ✅ Generate Thursdays from 03-04-2026 to 25-06-2026
   const weekSelect = document.getElementById("week");
+  const track = document.getElementById("card-track");
+
+  /* ==========================
+     GENERATE THURSDAYS
+  ========================== */
 
   let startDate = new Date("2026-04-03");
   let endDate = new Date("2026-06-25");
@@ -172,15 +173,16 @@ document.addEventListener("DOMContentLoaded", () => {
     startDate.setDate(startDate.getDate() + 7);
   }
 
-  // ✅ Add Home Game option
-  const homeGameOption = document.createElement("option");
-  homeGameOption.value = "HOME-GAME-2026";
-  homeGameOption.textContent = "🏠 Home Game";
-  weekSelect.appendChild(homeGameOption);
+  // Add Home Game
+  const homeOption = document.createElement("option");
+  homeOption.value = "HOME-GAME-2026";
+  homeOption.textContent = "🏠 Home Game";
+  weekSelect.appendChild(homeOption);
 
-  const track = document.getElementById("card-track");
+  /* ==========================
+     CREATE PLAYER CARDS
+  ========================== */
 
-  // ✅ Create swipe cards
   players.forEach(player => {
 
     const card = document.createElement("div");
@@ -196,9 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <input type="number" min="0" value="0">
 
       <label>Golden Snitch (+10)</label>
-      <input type="number" min="0" value="0">
-
-      <label>Snitch Beast (+5)</label>
       <input type="number" min="0" value="0">
 
       <div class="rule-section">
@@ -230,7 +229,10 @@ document.addEventListener("DOMContentLoaded", () => {
     track.appendChild(card);
   });
 
-  // ✅ Swipe Navigation
+  /* ==========================
+     BUTTON NAVIGATION
+  ========================== */
+
   let currentIndex = 0;
 
   function updateSlide() {
@@ -238,16 +240,53 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("prevBtn").onclick = () => {
-    if(currentIndex > 0) currentIndex--;
-    updateSlide();
+    if (currentIndex > 0) {
+      currentIndex--;
+      updateSlide();
+    }
   };
 
   document.getElementById("nextBtn").onclick = () => {
-    if(currentIndex < players.length - 1) currentIndex++;
-    updateSlide();
+    if (currentIndex < players.length - 1) {
+      currentIndex++;
+      updateSlide();
+    }
   };
 
-  // ✅ Prevent duplicate final positions
+  /* ==========================
+     TOUCH SWIPE SUPPORT
+  ========================== */
+
+  let startX = 0;
+  let endX = 0;
+
+  track.addEventListener("touchstart", (e) => {
+    startX = e.touches[0].clientX;
+  });
+
+  track.addEventListener("touchend", (e) => {
+    endX = e.changedTouches[0].clientX;
+    handleSwipe();
+  });
+
+  function handleSwipe() {
+    const swipeDistance = startX - endX;
+
+    if (swipeDistance > 50 && currentIndex < players.length - 1) {
+      currentIndex++;
+      updateSlide();
+    }
+
+    if (swipeDistance < -50 && currentIndex > 0) {
+      currentIndex--;
+      updateSlide();
+    }
+  }
+
+  /* ==========================
+     PREVENT DUPLICATE POSITIONS
+  ========================== */
+
   document.querySelectorAll(".final-position").forEach(select=>{
     select.addEventListener("change",()=>{
       const values = [...document.querySelectorAll(".final-position")]
@@ -264,7 +303,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
 });
-
 </script>
 
 </body>
