@@ -1,16 +1,8 @@
 import { db } from './firebaseConfig.js';
 import { doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
-// Players array
-const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
-
-// =============================
-// SAVE DRAFT
-// =============================
-document.getElementById('save-draft-btn').addEventListener('click', async () => {
-  await saveScores(false);
-  alert('Draft saved successfully!');
-});
+// Updated Players (NOW 6)
+const players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan", "Travis"];
 
 // =============================
 // SUBMIT SCORES
@@ -18,8 +10,7 @@ document.getElementById('save-draft-btn').addEventListener('click', async () => 
 document.getElementById('score-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   await saveScores(true);
-  alert('All scores submitted successfully!');
-  e.target.reset();
+  alert('Week submitted successfully!');
 });
 
 // =============================
@@ -30,35 +21,34 @@ async function saveScores(submitted) {
   const formData = new FormData(document.getElementById('score-form'));
 
   for (const player of players) {
+
     const scoreData = {
       player,
       week,
 
-      // Bounties
+      // Core scoring
       wildScalps: parseInt(formData.get(`wildScalps[${player}]`)) || 0,
       headHunter: parseInt(formData.get(`headHunter[${player}]`)) || 0,
-
-      // Negative
-      eliminated: parseInt(formData.get(`eliminated[${player}]`)) || 0,
-
-      // Snitch
       goldenSnitch: parseInt(formData.get(`goldenSnitch[${player}]`)) || 0,
+      snitchBeast: parseInt(formData.get(`snitchBeast[${player}]`)) || 0,
+
+      // Final table (1–5 or null)
+      finalPosition: formData.get(`finalPosition[${player}]`)
+        ? parseInt(formData.get(`finalPosition[${player}]`))
+        : null,
+
+      // Checkboxes
+      savedByBell: formData.get(`savedByBell[${player}]`) === "on",
+      rebuyBust: formData.get(`rebuyBust[${player}]`) === "on",
+
+      // Negatives
+      assassinated: parseInt(formData.get(`assassinated[${player}]`)) || 0,
       snitchElim: parseInt(formData.get(`snitchElim[${player}]`)) || 0,
-      snitchHolderBounty: parseInt(formData.get(`snitchHolderBounty[${player}]`)) || 0,
 
-      // Final table position
-      finalPosition: parseInt(formData.get(`finalPosition[${player}]`)) || null,
-
-      // Break logic
-      rebuy: formData.get(`rebuy[${player}]`) === "on",
-      savedByBreak: formData.get(`savedByBreak[${player}]`) === "on",
-
-      // Fish Favourite
-      fishBounty72: parseInt(formData.get(`fishBounty72[${player}]`)) || 0,
-      fishKO72: parseInt(formData.get(`fishKO72[${player}]`)) || 0,
-
-      // Special hand bounty
-      deathByQuads: parseInt(formData.get(`deathByQuads[${player}]`)) || 0,
+      // Special rules
+      fish72Bounty: parseInt(formData.get(`fish72Bounty[${player}]`)) || 0,
+      fish72Elim: parseInt(formData.get(`fish72Elim[${player}]`)) || 0,
+      deathByQuadsOrSF: parseInt(formData.get(`deathByQuadsOrSF[${player}]`)) || 0,
 
       submitted,
       timestamp: new Date()
@@ -83,25 +73,25 @@ async function loadScoresForWeek(week) {
     if (docSnap.exists()) {
       const data = docSnap.data();
 
-      setInputValue(scoreForm, `wildScalps[${player}]`, data.wildScalps ?? 0);
-      setInputValue(scoreForm, `headHunter[${player}]`, data.headHunter ?? 0);
-      setInputValue(scoreForm, `eliminated[${player}]`, data.eliminated ?? 0);
+      setInput(scoreForm, `wildScalps[${player}]`, data.wildScalps ?? 0);
+      setInput(scoreForm, `headHunter[${player}]`, data.headHunter ?? 0);
+      setInput(scoreForm, `goldenSnitch[${player}]`, data.goldenSnitch ?? 0);
+      setInput(scoreForm, `snitchBeast[${player}]`, data.snitchBeast ?? 0);
 
-      setInputValue(scoreForm, `goldenSnitch[${player}]`, data.goldenSnitch ?? 0);
-      setInputValue(scoreForm, `snitchElim[${player}]`, data.snitchElim ?? 0);
-      setInputValue(scoreForm, `snitchHolderBounty[${player}]`, data.snitchHolderBounty ?? 0);
+      setInput(scoreForm, `finalPosition[${player}]`, data.finalPosition ?? "");
 
-      setInputValue(scoreForm, `finalPosition[${player}]`, data.finalPosition ?? "");
+      setCheckbox(scoreForm, `savedByBell[${player}]`, data.savedByBell ?? false);
+      setCheckbox(scoreForm, `rebuyBust[${player}]`, data.rebuyBust ?? false);
 
-      setCheckboxValue(scoreForm, `rebuy[${player}]`, data.rebuy ?? false);
-      setCheckboxValue(scoreForm, `savedByBreak[${player}]`, data.savedByBreak ?? false);
+      setInput(scoreForm, `assassinated[${player}]`, data.assassinated ?? 0);
+      setInput(scoreForm, `snitchElim[${player}]`, data.snitchElim ?? 0);
 
-      setInputValue(scoreForm, `fishBounty72[${player}]`, data.fishBounty72 ?? 0);
-      setInputValue(scoreForm, `fishKO72[${player}]`, data.fishKO72 ?? 0);
-      setInputValue(scoreForm, `deathByQuads[${player}]`, data.deathByQuads ?? 0);
+      setInput(scoreForm, `fish72Bounty[${player}]`, data.fish72Bounty ?? 0);
+      setInput(scoreForm, `fish72Elim[${player}]`, data.fish72Elim ?? 0);
+      setInput(scoreForm, `deathByQuadsOrSF[${player}]`, data.deathByQuadsOrSF ?? 0);
 
     } else {
-      resetPlayerInputs(scoreForm, player);
+      resetPlayer(scoreForm, player);
     }
   }
 }
@@ -109,33 +99,33 @@ async function loadScoresForWeek(week) {
 // =============================
 // HELPERS
 // =============================
-function setInputValue(form, name, value) {
+function setInput(form, name, value) {
   const input = form.querySelector(`[name="${name}"]`);
   if (input) input.value = value;
 }
 
-function setCheckboxValue(form, name, checked) {
+function setCheckbox(form, name, checked) {
   const input = form.querySelector(`[name="${name}"]`);
   if (input) input.checked = checked;
 }
 
-function resetPlayerInputs(form, player) {
-  setInputValue(form, `wildScalps[${player}]`, 0);
-  setInputValue(form, `headHunter[${player}]`, 0);
-  setInputValue(form, `eliminated[${player}]`, 0);
+function resetPlayer(form, player) {
+  setInput(form, `wildScalps[${player}]`, 0);
+  setInput(form, `headHunter[${player}]`, 0);
+  setInput(form, `goldenSnitch[${player}]`, 0);
+  setInput(form, `snitchBeast[${player}]`, 0);
 
-  setInputValue(form, `goldenSnitch[${player}]`, 0);
-  setInputValue(form, `snitchElim[${player}]`, 0);
-  setInputValue(form, `snitchHolderBounty[${player}]`, 0);
+  setInput(form, `finalPosition[${player}]`, "");
 
-  setInputValue(form, `finalPosition[${player}]`, "");
+  setCheckbox(form, `savedByBell[${player}]`, false);
+  setCheckbox(form, `rebuyBust[${player}]`, false);
 
-  setCheckboxValue(form, `rebuy[${player}]`, false);
-  setCheckboxValue(form, `savedByBreak[${player}]`, false);
+  setInput(form, `assassinated[${player}]`, 0);
+  setInput(form, `snitchElim[${player}]`, 0);
 
-  setInputValue(form, `fishBounty72[${player}]`, 0);
-  setInputValue(form, `fishKO72[${player}]`, 0);
-  setInputValue(form, `deathByQuads[${player}]`, 0);
+  setInput(form, `fish72Bounty[${player}]`, 0);
+  setInput(form, `fish72Elim[${player}]`, 0);
+  setInput(form, `deathByQuadsOrSF[${player}]`, 0);
 }
 
 // =============================

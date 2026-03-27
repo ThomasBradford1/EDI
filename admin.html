@@ -1,90 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Admin Score Submission</title>
-  <style>
-    body { font-family: Arial; margin:0; padding:0; background:#f0f0f0; }
-    .background-overlay { background-color: rgba(255,255,255,0.92); padding:30px; max-width:1400px; margin:auto; border-radius:10px; }
-    .players-container { display:flex; gap:20px; overflow-x:auto; }
-    .player-column { background:white; padding:15px; border-radius:8px; min-width:260px; }
-    .player-column label { display:block; margin-top:6px; font-size:0.9rem; }
-    select, input[type="number"] { width:100%; padding:4px; margin-top:3px; }
-    button { margin-top:20px; padding:10px 20px; background-color:#4caf50; color:white; border:none; border-radius:5px; font-size:1rem; cursor:pointer; }
-    button:hover { background-color:#388e3c; }
-    a.button-link { display:inline-block; margin-top:20px; padding:10px 15px; background-color:#4caf50; color:white; text-decoration:none; border-radius:5px; }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jordoncup Admin</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+}
+
+header {
+  padding: 16px;
+  text-align: center;
+  background: #1c1c1c;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.container {
+  padding: 16px;
+}
+
+label {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+select, input[type="number"] {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  margin-bottom: 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.3);
+  margin-right: 8px;
+}
+
+.card-wrapper {
+  overflow: hidden;
+}
+
+.card-track {
+  display: flex;
+  transition: transform 0.3s ease;
+}
+
+.player-card {
+  min-width: 100%;
+  box-sizing: border-box;
+  padding: 20px;
+  background: #1c1c1c;
+  border-radius: 14px;
+}
+
+.player-card h2 {
+  margin-top: 0;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.rule-section {
+  border-top: 1px solid #333;
+  padding-top: 10px;
+  margin-top: 10px;
+}
+
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+button {
+  background: gold;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 1rem;
+  width: 100%;
+  margin-top: 10px;
+}
+
+button:disabled {
+  background: #555;
+}
+
+.submit-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  padding: 12px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.6);
+}
+
+.submit-bar button {
+  margin: 0;
+}
+
+.week-select {
+  margin-bottom: 20px;
+}
+</style>
 </head>
+
 <body>
-  <div class="background-overlay">
-    <h2>Submit Weekly Scores - Jordoncup</h2>
 
-    <form id="score-form">
-      <label>Week:
-        <select id="week" name="week"></select>
-      </label>
+<header>Jordoncup Admin</header>
 
-      <div class="players-container" id="players-area"></div>
+<div class="container">
 
-      <button type="button" id="save-draft-btn">Save Draft</button>
-      <button type="submit">Submit All Scores</button>
-    </form>
+<label>Week</label>
+<select id="week" class="week-select"></select>
 
-    <a class="button-link" href="leaderboard.html">View Leaderboard</a>
-  </div>
+<div class="card-wrapper">
+  <div class="card-track" id="card-track"></div>
+</div>
 
-  <script type="module">
-    document.addEventListener("DOMContentLoaded", () => {
-      window.players = ["Micheal", "Tom", "Luke", "Jeff", "Jordan"];
-      const weeks = ["2026-01-08","2026-01-15","2026-01-22","2026-01-29","2026-02-05","2026-02-12","2026-02-19","2026-02-26","2026-03-05","2026-03-12","2026-03-19","2026-03-26","HomeGame","Leaderboard"];
-      const weekSelect = document.getElementById("week");
-      weeks.forEach(d => {
-        const opt = document.createElement("option");
-        opt.value=d;
-        if(d==="HomeGame") opt.textContent="Home Game";
-        else if(d==="Leaderboard") opt.textContent="Leaderboard Update";
-        else opt.textContent=`Week - ${new Date(d).toLocaleDateString("en-AU")}`;
-        weekSelect.appendChild(opt);
-      });
-      weekSelect.selectedIndex=0;
+<div class="nav-buttons">
+  <button type="button" id="prevBtn">←</button>
+  <button type="button" id="nextBtn">→</button>
+</div>
 
-      const container = document.getElementById("players-area");
-      window.players.forEach(player=>{
-        const div = document.createElement("div");
-        div.className="player-column";
-        div.innerHTML=`
-          <h3>${player}</h3>
-          <label>Wild Scalps (+5 each)<input type="number" name="wildScalps[${player}]" min="0" value="0"></label>
-          <label>Head Hunter (+10 each)<input type="number" name="headHunter[${player}]" min="0" value="0"></label>
-          <label>Eliminated (-10 each)<input type="number" name="eliminated[${player}]" min="0" value="0"></label>
-          <hr>
-          <label>Golden Snitch (+10 each)<input type="number" name="goldenSnitch[${player}]" min="0" value="0"></label>
-          <label>Snitch Elimination (-25 each)<input type="number" name="snitchElim[${player}]" min="0" value="0"></label>
-          <label>Snitch Holder Bounty (+5 each)<input type="number" name="snitchHolderBounty[${player}]" min="0" value="0"></label>
-          <hr>
-          <label>Final Position
-            <select name="finalPosition[${player}]">
-              <option value="">--</option>
-              <option value="1">1st (+50)</option>
-              <option value="2">2nd (+40)</option>
-              <option value="3">3rd (+30)</option>
-              <option value="4">4th (+20)</option>
-              <option value="5">5th (+10)</option>
-            </select>
-          </label>
-          <hr>
-          <label><input type="checkbox" name="rebuy[${player}]"> Rebuy</label>
-          <label><input type="checkbox" name="savedByBreak[${player}]"> Saved By Break (+10 if no rebuy)</label>
-          <hr>
-          <label>Fish 7-2 Bounty (+72 each)<input type="number" name="fishBounty72[${player}]" min="0" value="0"></label>
-          <label>Fish 7-2 KO (+36 each)<input type="number" name="fishKO72[${player}]" min="0" value="0"></label>
-          <label>Death by Quads / Straight Flush (+40 each)<input type="number" name="deathByQuads[${player}]" min="0" value="0"></label>
-        `;
-        container.appendChild(div);
-      });
+</div>
+
+<div class="submit-bar">
+  <button type="submit" form="score-form">SUBMIT WEEK</button>
+</div>
+
+<form id="score-form"></form>
+
+<script type="module">
+document.addEventListener("DOMContentLoaded", () => {
+
+  window.players = ["Micheal","Tom","Luke","Jeff","Jordan","Travis"];
+
+  const weeks = [
+    "2026-01-08","2026-01-15","2026-01-22",
+    "2026-01-29","2026-02-05","2026-02-12",
+    "2026-02-19","2026-02-26","2026-03-05",
+    "2026-03-12","2026-03-19","2026-03-26"
+  ];
+
+  const weekSelect = document.getElementById("week");
+  weeks.forEach(d=>{
+    const opt=document.createElement("option");
+    opt.value=d;
+    opt.textContent=`Week - ${new Date(d).toLocaleDateString("en-AU")}`;
+    weekSelect.appendChild(opt);
+  });
+
+  const track = document.getElementById("card-track");
+  const form = document.getElementById("score-form");
+
+  window.players.forEach(player => {
+
+    const card = document.createElement("div");
+    card.className = "player-card";
+
+    card.innerHTML = `
+      <h2>${player}</h2>
+
+      <label>Wild Scalps (+5)</label>
+      <input type="number" name="wildScalps[${player}]" min="0" value="0">
+
+      <label>Head Hunter (+10)</label>
+      <input type="number" name="headHunter[${player}]" min="0" value="0">
+
+      <label>Golden Snitch (+10)</label>
+      <input type="number" name="goldenSnitch[${player}]" min="0" value="0">
+
+      <label>Snitch Beast (+5)</label>
+      <input type="number" name="snitchBeast[${player}]" min="0" value="0">
+
+      <div class="rule-section">
+        <label>Final Table Position</label>
+        <select name="finalPosition[${player}]" class="final-position">
+          <option value="">--</option>
+          <option value="1">1st (+5)</option>
+          <option value="2">2nd (+4)</option>
+          <option value="3">3rd (+3)</option>
+          <option value="4">4th (+2)</option>
+          <option value="5">5th (+1)</option>
+        </select>
+      </div>
+
+      <div class="rule-section">
+        <label><input type="checkbox" name="savedByBell[${player}]"> Saved By The Bell (+10)</label>
+        <label><input type="checkbox" name="rebuyBust[${player}]"> Rebuy Bust (-10)</label>
+      </div>
+
+      <div class="rule-section">
+        <label>Assassinated (-10)</label>
+        <input type="number" name="assassinated[${player}]" min="0" value="0">
+
+        <label>Snitch Elim (-25)</label>
+        <input type="number" name="snitchElim[${player}]" min="0" value="0">
+      </div>
+
+      <div class="rule-section">
+        <label>Fish 7-2 Bounty (+72)</label>
+        <input type="number" name="fish72Bounty[${player}]" min="0" value="0">
+
+        <label>Fish 7-2 Eliminated (+36)</label>
+        <input type="number" name="fish72Elim[${player}]" min="0" value="0">
+
+        <label>Death by Quads / SF (+40)</label>
+        <input type="number" name="deathByQuadsOrSF[${player}]" min="0" value="0">
+      </div>
+    `;
+
+    track.appendChild(card);
+  });
+
+  // Swipe navigation
+  let currentIndex = 0;
+
+  function updateSlide() {
+    track.style.transform = `translateX(-${currentIndex * 100}%)`;
+  }
+
+  document.getElementById("prevBtn").onclick = () => {
+    if(currentIndex > 0) currentIndex--;
+    updateSlide();
+  };
+
+  document.getElementById("nextBtn").onclick = () => {
+    if(currentIndex < window.players.length - 1) currentIndex++;
+    updateSlide();
+  };
+
+  // Prevent duplicate final positions
+  document.querySelectorAll(".final-position").forEach(select=>{
+    select.addEventListener("change",()=>{
+      const values = [...document.querySelectorAll(".final-position")]
+        .map(s=>s.value)
+        .filter(v=>v !== "");
+
+      const duplicates = values.filter((v,i,a)=>a.indexOf(v)!==i);
+
+      if(duplicates.length > 0){
+        alert("Duplicate final table positions not allowed.");
+        select.value="";
+      }
     });
-  </script>
+  });
 
-  <script type="module" src="admin.js"></script>
+});
+</script>
+
+<script type="module" src="admin.js"></script>
+
 </body>
 </html>

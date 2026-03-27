@@ -1,232 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Previous Week Scores</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
+<meta charset="UTF-8">
+<title>Previous Week Scores</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 15px;
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+  }
+
+  label, select {
+    display: block;
+    margin: 10px 0;
+    font-weight: 600;
+  }
+
+  select {
+    padding: 6px 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+
+  .table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-top: 15px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+  }
+
+  th {
+    background-color: #4caf50;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td:first-child, th:first-child {
+    text-align: left;
+    font-weight: 700;
+    color: #2e7d32;
+  }
+
+  /* Mobile-first: stacked table */
+  @media (max-width: 700px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tr.main-row {
+      background: #fff;
+      margin-bottom: 10px;
+      border-radius: 8px;
       padding: 10px;
-      margin: 0 auto;
-      max-width: 100%;
-      font-family: Arial, sans-serif;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
     }
 
-    .table-container {
-      width: 100%;
-      overflow-x: auto;
+    tr.details-row {
+      display: none;
+      background: #eef5ee;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      padding: 10px;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: auto;
+    td {
+      border: none;
+      padding: 6px 0;
+      text-align: left;
+      position: relative;
     }
 
-    thead tr {
-      background-color: #4caf50;
-      color: white;
+    td[data-label]::before {
+      content: attr(data-label) ": ";
       font-weight: 600;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    th, td {
-      padding: 8px 10px;
-      border-bottom: 1px solid #c6e0b4;
-      text-align: center;
-      white-space: nowrap;
-    }
-
-    th:nth-child(1), td:nth-child(1) {
-      width: 20%;
-      min-width: 120px;
-      text-align: left;
-      font-weight: 700;
-      color: #2e7d32;
-    }
-
-    th:nth-child(2), td:nth-child(2) {
-      width: 10%;
-      min-width: 70px;
-      text-align: left;
-      font-weight: 700;
-      color: #2e7d32;
-    }
-
-    th:nth-child(n+3), td:nth-child(n+3) {
-      min-width: 60px;
-      font-size: 0.85rem;
       color: #555;
     }
 
-    @media (max-width: 700px) {
-      table {
-        min-width: 900px;
-      }
+    .view-details-btn {
+      display: block;
+      margin-top: 8px;
+      padding: 5px 8px;
+      font-size: 0.9rem;
+      background: #4caf50;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
-  </style>
-</head>
+  }
 
-<body>
-  <h1>Previous Week Scores</h1>
-
-  <label for="weekSelect">Select Week:</label>
-  <select id="weekSelect">
-    <option value="">-- Choose a week --</option>
-  </select>
-
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Total Points</th>
-          <th>Wild Scalps</th>
-          <th>Head Hunter</th>
-          <th>Winning Game</th>
-          <th>Venue Position</th>
-          <th>Assassinated</th>
-          <th>Golden Snitch</th>
-          <th>Snitch Elim</th>
-          <th>Final Table</th>
-        </tr>
-      </thead>
-      <tbody id="week-body">
-        <tr><td colspan="10">Select a week to view scores.</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <a href="leaderboard.html" style="
+  a, button {
     display: inline-block;
     margin-top: 20px;
     padding: 10px 15px;
-    background-color: #4CAF50;
-    color: white;
-    text-decoration: none;
     border-radius: 5px;
-    font-weight: bold;">
-    ← Back to Leaderboard
-  </a>
+    font-weight: bold;
+    text-decoration: none;
+  }
 
-  <button id="logout-btn" style="
-    margin-top: 20px;
-    padding: 8px 15px;
+  a {
+    background-color: #4caf50;
+    color: white;
+  }
+
+  button#logout-btn {
     background-color: #e53935;
     color: white;
     border: none;
-    border-radius: 4px;
-    cursor: pointer;">
-    Logout
-  </button>
+    cursor: pointer;
+  }
 
-  <!-- Firebase -->
-  <script type="module">
-    import { db } from './firebaseConfig.js';
-    import {
-      collection,
-      getDocs,
-      query,
-      where
-    } from "https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js";
+</style>
+</head>
+<body>
+<h1>Previous Week Scores</h1>
 
-    const weekSelect = document.getElementById("weekSelect");
-    const weekBody = document.getElementById("week-body");
+<label for="weekSelect">Select Week:</label>
+<select id="weekSelect">
+  <option value="">-- Choose a week --</option>
+</select>
 
-    async function loadWeeks() {
-      const snapshot = await getDocs(collection(db, "scores"));
-      const weeks = new Set();
+<div class="table-container">
+  <table id="week-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Total Points</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="week-body">
+      <tr><td colspan="3">Select a week to view scores.</td></tr>
+    </tbody>
+  </table>
+</div>
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        if (data.week) weeks.add(data.week);
-      });
+<a href="leaderboard.html">← Back to Leaderboard</a>
+<button id="logout-btn">Logout</button>
 
-      Array.from(weeks).sort().forEach(week => {
-        const option = document.createElement("option");
-        option.value = week;
-        option.textContent = week;
-        weekSelect.appendChild(option);
-      });
-    }
+<script type="module">
+import { db } from './firebaseConfig.js';
+import { collection, getDocs, query, where } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-firestore.js';
 
-    weekSelect.addEventListener("change", async (e) => {
-      const selectedWeek = e.target.value;
-      if (!selectedWeek) return;
+const weekSelect = document.getElementById("weekSelect");
+const weekBody = document.getElementById("week-body");
 
-      const q = query(collection(db, "scores"), where("week", "==", selectedWeek));
-      const snapshot = await getDocs(q);
+// Load all weeks
+async function loadWeeks() {
+  const snapshot = await getDocs(collection(db, "scores"));
+  const weeks = new Set();
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.week) weeks.add(data.week);
+  });
+  Array.from(weeks).sort().forEach(week => {
+    const option = document.createElement("option");
+    option.value = week;
+    option.textContent = week;
+    weekSelect.appendChild(option);
+  });
+}
 
-      if (snapshot.empty) {
-        weekBody.innerHTML = "<tr><td colspan='10'>No scores found.</td></tr>";
-        return;
-      }
+// Calculate points per player
+function calculatePoints(data) {
+  let points = 0;
+  points += data.finalTable ? 3 : 0;
+  points += data.winningGame ? 5 : 0;
+  points += parseInt(data.wildScalps) || 0;
+  points += parseInt(data.headHunter) || 0;
+  points += data.assassinated ? -1 : 0;
+  points += data.goldenSnitch ? 2 : 0;
+  points += data.snitchElim ? -2 : 0;
+  return points;
+}
 
-      const players = [];
+// Load scores for selected week
+weekSelect.addEventListener("change", async (e) => {
+  const selectedWeek = e.target.value;
+  if (!selectedWeek) return;
 
-      snapshot.forEach(doc => {
-        const data = doc.data();
-        const points = calculatePoints(data);
+  const q = query(collection(db, "scores"), where("week", "==", selectedWeek));
+  const snapshot = await getDocs(q);
 
-        players.push({
-          player: data.player,
-          points,
-          ...data
-        });
-      });
+  if (snapshot.empty) {
+    weekBody.innerHTML = "<tr><td colspan='3'>No scores found.</td></tr>";
+    return;
+  }
 
-      // SORT BY POINTS DESC (nice improvement)
-      players.sort((a, b) => b.points - a.points);
+  const players = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    const points = calculatePoints(data);
+    players.push({ player: data.player, points, ...data });
+  });
 
-      weekBody.innerHTML = "";
+  // Sort descending
+  players.sort((a,b) => b.points - a.points);
 
-      players.forEach(p => {
-        weekBody.innerHTML += `
-          <tr>
-            <td>${p.player}</td>
-            <td>${p.points}</td>
-            <td>${p.wildScalps || 0}</td>
-            <td>${p.headHunter || 0}</td>
-            <td>${p.winningGame ? 1 : 0}</td>
-            <td>${p.venuePosition || '-'}</td>
-            <td>${p.assassinated ? 1 : 0}</td>
-            <td>${p.goldenSnitch ? 1 : 0}</td>
-            <td>${p.snitchElim ? 1 : 0}</td>
-            <td>${p.finalTable ? 1 : 0}</td>
-          </tr>
-        `;
-      });
+  weekBody.innerHTML = "";
+
+  players.forEach((p, idx) => {
+    const mainRow = document.createElement("tr");
+    mainRow.classList.add("main-row");
+    mainRow.innerHTML = `
+      <td>${p.player}</td>
+      <td>${p.points}</td>
+      <td><button class="view-details-btn">View Details</button></td>
+    `;
+    weekBody.appendChild(mainRow);
+
+    const detailsRow = document.createElement("tr");
+    detailsRow.classList.add("details-row");
+    detailsRow.innerHTML = `
+      <td colspan="3">
+        <strong>Wild Scalps:</strong> ${p.wildScalps || 0} &nbsp;
+        <strong>Head Hunter:</strong> ${p.headHunter || 0} &nbsp;
+        <strong>Winning Game:</strong> ${p.winningGame ? 1 : 0} &nbsp;
+        <strong>Venue Position:</strong> ${p.venuePosition || '-'} &nbsp;
+        <strong>Assassinated:</strong> ${p.assassinated ? 1 : 0} &nbsp;
+        <strong>Golden Snitch:</strong> ${p.goldenSnitch ? 1 : 0} &nbsp;
+        <strong>Snitch Elim:</strong> ${p.snitchElim ? 1 : 0} &nbsp;
+        <strong>Final Table:</strong> ${p.finalTable ? 1 : 0}
+      </td>
+    `;
+    weekBody.appendChild(detailsRow);
+
+    // Toggle details
+    mainRow.querySelector(".view-details-btn").addEventListener("click", () => {
+      detailsRow.style.display = detailsRow.style.display === "table-row" ? "none" : "table-row";
     });
+  });
+});
 
-    function calculatePoints(data) {
-      let points = 0;
+loadWeeks();
+</script>
 
-      points += data.finalTable ? 3 : 0;
-      points += data.winningGame ? 5 : 0;
-      points += parseInt(data.wildScalps) || 0;
-      points += parseInt(data.headHunter) || 0;
-      points += data.assassinated ? -1 : 0;
-      points += data.goldenSnitch ? 2 : 0;
-      points += data.snitchElim ? -2 : 0;
+<script type="module">
+import { auth } from './firebaseConfig.js';
+import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
 
-      return points;
-    }
+document.getElementById('logout-btn').addEventListener('click', async () => {
+  await signOut(auth);
+  localStorage.removeItem("isAdmin");
+  window.location.href = 'index.html';
+});
+</script>
 
-    loadWeeks();
-  </script>
-
-  <!-- Logout -->
-  <script type="module">
-    import { auth } from './firebaseConfig.js';
-    import { signOut } from 'https://www.gstatic.com/firebasejs/10.3.0/firebase-auth.js';
-
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await signOut(auth);
-      localStorage.removeItem("isAdmin");
-      window.location.href = 'index.html';
-    });
-  </script>
 </body>
 </html>

@@ -1,145 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Fantasy Leaderboard</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-image: url("lol.png");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: right bottom;
-        background-attachment: fixed;
-      }
-
-      @media (max-width: 600px) {
-        body {
-          background-size: 170%;
-          background-position: calc(100% - 30px) calc(100% - 300px);
-        }
-      }
-
-      .overlay {
-        background-color: rgba(255, 255, 255, 0.85);
-        padding: 20px;
-        max-width: 1200px;
-        margin: auto;
-        border-radius: 10px;
-      }
-
-      h1 {
-        font-size: 1.5rem;
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      .table-wrapper {
-        overflow-x: auto;
-        width: 100%;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        min-width: 650px;
-      }
-
-      thead tr {
-        background-color: #4caf50;
-        color: white;
-        font-weight: 600;
-        position: sticky;
-        top: 0;
-        z-index: 1;
-      }
-
-      th,
-      td {
-        padding: 8px 10px;
-        border-bottom: 1px solid #c6e0b4;
-        text-align: center;
-        white-space: nowrap;
-      }
-
-      th:nth-child(1),
-      td:nth-child(1),
-      th:nth-child(2),
-      td:nth-child(2),
-      th:nth-child(3),
-      td:nth-child(3) {
-        font-weight: 700;
-        color: #2e7d32;
-      }
-
-      th:nth-child(n + 4),
-      td:nth-child(n + 4) {
-        font-size: 0.85rem;
-        color: #555;
-      }
-
-      a.button {
-        display: inline-block;
-        margin: 10px 5px;
-        padding: 10px 15px;
-        background-color: #4caf50;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        font-size: 1rem;
-      }
-
-      a#adminButton {
-        background-color: #444;
-      }
-
-      #logout-btn {
-        margin-top: 20px;
-        padding: 8px 15px;
-        background-color: #e53935;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-    </style>
 <head>
-<meta charset="UTF-8">
-<title>Leaderboard - Jordoncup</title>
+<meta charset="UTF-8" />
+<title>Jordoncup Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  body { font-family: Arial; background:#f0f0f0; padding:20px; }
-  table { border-collapse: collapse; width: 100%; background:white; border-radius:10px; overflow:hidden; }
-  th, td { padding:8px 12px; border:1px solid #ccc; text-align:center; }
-  th { background:#4caf50; color:white; }
-  h2 { text-align:center; }
+  /* Reset & base */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f0f0f0;
+    color: #333;
+  }
+
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+  }
+
+  /* Table wrapper for desktop scroll */
+  .table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  th, td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #ccc;
+    text-align: center;
+  }
+
+  th {
+    background-color: #4caf50;
+    color: white;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  td:first-child, th:first-child {
+    text-align: left;
+    font-weight: 700;
+    color: #2e7d32;
+  }
+
+  .toggle-btn {
+    cursor: pointer;
+    color: #4caf50;
+    text-decoration: underline;
+  }
+
+  /* Mobile-first: stacked card layout */
+  @media (max-width: 700px) {
+    table, thead, tbody, th, td, tr {
+      display: block;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tr {
+      background: #fff;
+      margin-bottom: 15px;
+      border-radius: 8px;
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      position: relative;
+    }
+
+    td {
+      border: none;
+      padding: 6px 0;
+      text-align: left;
+      position: relative;
+    }
+
+    td::before {
+      content: attr(data-label);
+      font-weight: 600;
+      display: inline-block;
+      width: 140px;
+      color: #555;
+    }
+
+    td.player-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #2e7d32;
+    }
+
+    td.total-points {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #4caf50;
+    }
+
+    td.toggle-btn {
+      text-decoration: underline;
+      color: #4caf50;
+    }
+
+    /* Details card styling */
+    .details {
+      display: none;
+      margin-top: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    tr.show .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 15px;
+    }
+
+    .details div {
+      background: #fff;
+      padding: 6px 10px;
+      border-radius: 4px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  }
+
 </style>
 </head>
 <body>
-<h2>Jordoncup Leaderboard</h2>
-<table id="leaderboard-table">
-  <thead>
-    <tr>
-      <th>Player</th>
-      <th>Wild Scalps</th>
-      <th>Head Hunter</th>
-      <th>Eliminated</th>
-      <th>Golden Snitch</th>
-      <th>Snitch Elimination</th>
-      <th>Snitch Holder Bounty</th>
-      <th>Final Position</th>
-      <th>Rebuy</th>
-      <th>Saved By Break</th>
-      <th>Fish 7-2 Bounty</th>
-      <th>Fish 7-2 KO</th>
-      <th>Death by Quads</th>
-      <th>Total Points</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<h1>Jordoncup Leaderboard</h1>
+<button id="login-btn" style="
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 8px 12px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;">Admin Login</button>
+
+<div id="login-container" style="display:none;">
+  <input type="email" id="email" placeholder="Email" />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="submit-login">Login</button>
+  <p id="login-error" style="color:red;"></p>
+</div>
+<div class="table-wrapper">
+  <table id="leaderboard-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Final Position</th>
+        <th>Total Points</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script type="module">
 import { db } from './firebaseConfig.js';
@@ -147,62 +180,79 @@ import { collection, getDocs } from 'https://www.gstatic.com/firebasejs/10.3.0/f
 
 const tableBody = document.querySelector('#leaderboard-table tbody');
 const players = ["Micheal","Tom","Luke","Jeff","Jordan"];
-const finalPoints = [50,40,30,20,10];
+
+const finalPointsMapping = [50, 40, 30, 20, 10]; // 1st→50, 5th→10
 
 async function loadLeaderboard() {
   const scoresSnap = await getDocs(collection(db, 'scores'));
   const scores = {};
   scoresSnap.forEach(doc => {
     const data = doc.data();
-    if(!scores[data.player]) scores[data.player]=[];
+    if (!scores[data.player]) scores[data.player] = [];
     scores[data.player].push(data);
   });
 
-  const leaderboard = players.map(player=>{
-    const playerScores = scores[player]||[];
+  const leaderboard = players.map(player => {
+    const playerScores = scores[player] || [];
     const totals = {
-      wildScalps:0, headHunter:0, eliminated:0,
-      goldenSnitch:0, snitchElim:0, snitchHolderBounty:0,
-      finalPosition:0, rebuy:0, savedByBreak:0,
-      fishBounty72:0, fishKO72:0, deathByQuads:0,
-      totalPoints:0
+      wildScalps: 0, headHunter: 0, eliminated: 0,
+      goldenSnitch: 0, snitchElim: 0, snitchBeast: 0,
+      finalPosition: 0, rebuyBust: 0, savedByBell: 0,
+      fish72Bounty: 0, fish72Elim: 0, deathByQuadsOrSF: 0,
+      totalPoints: 0
     };
-    playerScores.forEach(s=>{
-      totals.wildScalps += s.wildScalps*5;
-      totals.headHunter += s.headHunter*10;
-      totals.eliminated += s.eliminated*-10;
-      totals.goldenSnitch += s.goldenSnitch*10;
-      totals.snitchElim += s.snitchElim*-25;
-      totals.snitchHolderBounty += s.snitchHolderBounty*5;
-      if(s.finalPosition) totals.finalPosition += finalPoints[s.finalPosition-1];
-      totals.rebuy += s.rebuy?0:0;
-      totals.savedByBreak += s.savedByBreak?10:0;
-      totals.fishBounty72 += s.fishBounty72*72;
-      totals.fishKO72 += s.fishKO72*36;
-      totals.deathByQuads += s.deathByQuads*40;
-      totals.totalPoints = totals.wildScalps+totals.headHunter+totals.eliminated+totals.goldenSnitch+totals.snitchElim+totals.snitchHolderBounty+totals.finalPosition+totals.savedByBreak+totals.fishBounty72+totals.fishKO72+totals.deathByQuads;
+
+    playerScores.forEach(s => {
+      totals.wildScalps += s.wildScalps * 5;
+      totals.headHunter += s.headHunter * 10;
+      totals.eliminated += s.eliminated * -10;
+      totals.goldenSnitch += s.goldenSnitch * 10;
+      totals.snitchElim += s.snitchElim * -25;
+      totals.snitchBeast += s.snitchBeast * 5;
+      totals.finalPosition += s.finalPosition ? finalPointsMapping[s.finalPosition - 1] : 0;
+      totals.rebuyBust += s.rebuyBust ? -10 : 0;
+      totals.savedByBell += s.savedByBell ? 10 : 0;
+      totals.fish72Bounty += s.fish72Bounty * 72;
+      totals.fish72Elim += s.fish72Elim * 36;
+      totals.deathByQuadsOrSF += s.deathByQuadsOrSF * 40;
     });
+
+    totals.totalPoints = Object.values(totals).reduce((a,b)=>typeof b==='number'? a+b : a,0);
     return { player, ...totals };
   });
 
-  tableBody.innerHTML = leaderboard.map(l=>`
+  leaderboard.sort((a,b) => b.totalPoints - a.totalPoints);
+
+  tableBody.innerHTML = leaderboard.map(l => `
     <tr>
-      <td>${l.player}</td>
-      <td>${l.wildScalps}</td>
-      <td>${l.headHunter}</td>
-      <td>${l.eliminated}</td>
-      <td>${l.goldenSnitch}</td>
-      <td>${l.snitchElim}</td>
-      <td>${l.snitchHolderBounty}</td>
-      <td>${l.finalPosition}</td>
-      <td>${l.rebuy}</td>
-      <td>${l.savedByBreak}</td>
-      <td>${l.fishBounty72}</td>
-      <td>${l.fishKO72}</td>
-      <td>${l.deathByQuads}</td>
-      <td>${l.totalPoints}</td>
+      <td class="player-name" data-label="Player">${l.player}</td>
+      <td data-label="Final Position">${l.finalPosition}</td>
+      <td class="total-points" data-label="Total Points">${l.totalPoints}</td>
+      <td class="toggle-btn" data-label="Details">Show</td>
+      <td class="details">
+        <div>Wild Scalps: ${l.wildScalps}</div>
+        <div>Head Hunter: ${l.headHunter}</div>
+        <div>Eliminated: ${l.eliminated}</div>
+        <div>Golden Snitch: ${l.goldenSnitch}</div>
+        <div>Snitch Elim: ${l.snitchElim}</div>
+        <div>Snitch Beast: ${l.snitchBeast}</div>
+        <div>Rebuy Bust: ${l.rebuyBust}</div>
+        <div>Saved By Bell: ${l.savedByBell}</div>
+        <div>Fish 7-2 Bounty: ${l.fish72Bounty}</div>
+        <div>Fish 7-2 KO: ${l.fish72Elim}</div>
+        <div>Death by Quads/SF: ${l.deathByQuadsOrSF}</div>
+      </td>
     </tr>
   `).join('');
+
+  // Toggle details on click
+  document.querySelectorAll('.toggle-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const tr = e.target.closest('tr');
+      tr.classList.toggle('show');
+      e.target.textContent = tr.classList.contains('show') ? 'Hide' : 'Show';
+    });
+  });
 }
 
 loadLeaderboard();
