@@ -139,7 +139,6 @@
     border: none;
     cursor: pointer;
   }
-
 </style>
 </head>
 <body>
@@ -191,20 +190,24 @@ async function loadWeeks() {
   });
 }
 
-// Calculate points per player
-function calculatePoints(data) {
-  let points = 0;
-  points += data.finalTable ? 3 : 0;
-  points += data.winningGame ? 5 : 0;
-  points += parseInt(data.wildScalps) || 0;
-  points += parseInt(data.headHunter) || 0;
-  points += data.assassinated ? -1 : 0;
-  points += data.goldenSnitch ? 2 : 0;
-  points += data.snitchElim ? -2 : 0;
-  return points;
+// Calculate total points per player for the week
+function calculateTotalPoints(data) {
+  let total = 0;
+  total += (data.wildScalps || 0) * 5;
+  total += (data.headHunter || 0) * 10;
+  total += (data.eliminated || 0) * -10;
+  total += data.goldenSnitch ? 10 : 0;
+  total += data.snitchElim ? -25 : 0;
+  total += data.snitchHolderBounty ? 5 : 0;
+  total += data.finalPosition ? [50,40,30,20,10][data.finalPosition-1] || 0 : 0;
+  total += data.rebuy ? -10 : 0;
+  total += data.savedByBreak ? 10 : 0;
+  total += (data.fishBounty72 || 0) * 72;
+  total += (data.fishKO72 || 0) * 36;
+  total += (data.deathByQuads || 0) * 40;
+  return total;
 }
 
-// Load scores for selected week
 weekSelect.addEventListener("change", async (e) => {
   const selectedWeek = e.target.value;
   if (!selectedWeek) return;
@@ -220,21 +223,37 @@ weekSelect.addEventListener("change", async (e) => {
   const players = [];
   snapshot.forEach(doc => {
     const data = doc.data();
-    const points = calculatePoints(data);
-    players.push({ player: data.player, points, ...data });
+
+    // Compute raw counts
+    const counts = {
+      wildScalps: data.wildScalps || 0,
+      headHunter: data.headHunter || 0,
+      eliminated: data.eliminated || 0,
+      goldenSnitch: data.goldenSnitch ? 1 : 0,
+      snitchElim: data.snitchElim ? 1 : 0,
+      snitchHolderBounty: data.snitchHolderBounty ? 1 : 0,
+      finalPosition: data.finalPosition || 0,
+      rebuy: data.rebuy ? 1 : 0,
+      savedByBreak: data.savedByBreak ? 1 : 0,
+      fishBounty72: data.fishBounty72 || 0,
+      fishKO72: data.fishKO72 || 0,
+      deathByQuads: data.deathByQuads || 0
+    };
+
+    players.push({ player: data.player, totalPoints: calculateTotalPoints(data), counts });
   });
 
   // Sort descending
-  players.sort((a,b) => b.points - a.points);
+  players.sort((a,b) => b.totalPoints - a.totalPoints);
 
   weekBody.innerHTML = "";
 
-  players.forEach((p, idx) => {
+  players.forEach(p => {
     const mainRow = document.createElement("tr");
     mainRow.classList.add("main-row");
     mainRow.innerHTML = `
       <td>${p.player}</td>
-      <td>${p.points}</td>
+      <td>${p.totalPoints}</td>
       <td><button class="view-details-btn">View Details</button></td>
     `;
     weekBody.appendChild(mainRow);
@@ -243,19 +262,22 @@ weekSelect.addEventListener("change", async (e) => {
     detailsRow.classList.add("details-row");
     detailsRow.innerHTML = `
       <td colspan="3">
-        <strong>Wild Scalps:</strong> ${p.wildScalps || 0} &nbsp;
-        <strong>Head Hunter:</strong> ${p.headHunter || 0} &nbsp;
-        <strong>Winning Game:</strong> ${p.winningGame ? 1 : 0} &nbsp;
-        <strong>Venue Position:</strong> ${p.venuePosition || '-'} &nbsp;
-        <strong>Assassinated:</strong> ${p.assassinated ? 1 : 0} &nbsp;
-        <strong>Golden Snitch:</strong> ${p.goldenSnitch ? 1 : 0} &nbsp;
-        <strong>Snitch Elim:</strong> ${p.snitchElim ? 1 : 0} &nbsp;
-        <strong>Final Table:</strong> ${p.finalTable ? 1 : 0}
+        <strong>Wild Scalps:</strong> ${p.counts.wildScalps} &nbsp;
+        <strong>Head Hunter:</strong> ${p.counts.headHunter} &nbsp;
+        <strong>Eliminated:</strong> ${p.counts.eliminated} &nbsp;
+        <strong>Golden Snitch:</strong> ${p.counts.goldenSnitch} &nbsp;
+        <strong>Snitch Elim:</strong> ${p.counts.snitchElim} &nbsp;
+        <strong>Snitch Holder Bounty:</strong> ${p.counts.snitchHolderBounty} &nbsp;
+        <strong>Final Position:</strong> ${p.counts.finalPosition} &nbsp;
+        <strong>Rebuy Bust:</strong> ${p.counts.rebuy} &nbsp;
+        <strong>Saved By Break:</strong> ${p.counts.savedByBreak} &nbsp;
+        <strong>Fish 7-2 Bounty:</strong> ${p.counts.fishBounty72} &nbsp;
+        <strong>Fish 7-2 KO:</strong> ${p.counts.fishKO72} &nbsp;
+        <strong>Death by Quads:</strong> ${p.counts.deathByQuads}
       </td>
     `;
     weekBody.appendChild(detailsRow);
 
-    // Toggle details
     mainRow.querySelector(".view-details-btn").addEventListener("click", () => {
       detailsRow.style.display = detailsRow.style.display === "table-row" ? "none" : "table-row";
     });
@@ -275,6 +297,5 @@ document.getElementById('logout-btn').addEventListener('click', async () => {
   window.location.href = 'index.html';
 });
 </script>
-
 </body>
 </html>
