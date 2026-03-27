@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jordoncup</title>
+<style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    height: 100vh;
+    background: #111;
+    color: white;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .trophy-container {
+    position: relative;
+    width: 150px;
+    height: 200px;
+    z-index: 2;
+  }
+
+  .trophy {
+    width: 100%;
+    transform: translateY(50px) scale(0.8);
+    animation: liftCup 2s forwards;
+  }
+
+  @keyframes liftCup {
+    0% { transform: translateY(50px) scale(0.8); }
+    60% { transform: translateY(-20px) scale(1.1); }
+    80% { transform: translateY(-10px) scale(1.05); }
+    100% { transform: translateY(0px) scale(1); }
+  }
+
+  .text {
+    opacity: 0;
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 20px;
+    z-index: 2;
+    animation: showText 1s forwards;
+    animation-delay: 2s; /* show after cup lifts */
+  }
+
+  @keyframes showText {
+    to { opacity: 1; }
+  }
+
+  /* Confetti styles */
+  .confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    top: -10px;
+    opacity: 0.9;
+    z-index: 1;
+    border-radius: 3px;
+  }
+
+  /* Skip button */
+  #skip-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #4caf50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3;
+    opacity: 0.9;
+  }
+</style>
+</head>
+<body>
+
+<div class="trophy-container">
+  <img src="trophy.png" alt="Trophy" class="trophy"/>
+</div>
+<div class="text">JORDON CUP</div>
+
+<button id="skip-btn">Skip Animation →</button>
+
+<script>
+  // Confetti generator
+  function createConfetti() {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
+    document.body.appendChild(confetti);
+
+    const colors = ["#f94144","#f3722c","#f8961e","#f9c74f","#90be6d","#43aa8b","#577590","#ff6b6b"];
+    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+    confetti.style.left = Math.random() * window.innerWidth + "px";
+    const duration = 2000 + Math.random() * 2000;
+
+    confetti.animate([
+      { transform: "translateY(0px) rotate(0deg)", opacity: 1 },
+      { transform: `translateY(${window.innerHeight + 20}px) rotate(${Math.random()*360}deg)`, opacity: 0 }
+    ], {
+      duration: duration,
+      easing: "ease-out",
+      iterations: 1
+    });
+
+    setTimeout(() => confetti.remove(), duration);
+  }
+
+  function launchConfetti() {
+    for (let i = 0; i < 50; i++) {
+      setTimeout(createConfetti, i * 50);
+    }
+  }
+
+  const redirectToLeaderboard = () => {
+    window.location.href = "leaderboard.html";
+  };
+
+  // Launch confetti after text
+  const confettiTimeout = setTimeout(launchConfetti, 2200);
+
+  // Automatic redirect after 5s
+  const redirectTimeout = setTimeout(redirectToLeaderboard, 5000);
+
+  // Skip button click
+  document.getElementById("skip-btn").addEventListener("click", () => {
+    clearTimeout(confettiTimeout);
+    clearTimeout(redirectTimeout);
+    redirectToLeaderboard();
+  });
+</script>
+
+</body>
+</html>
